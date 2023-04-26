@@ -1,0 +1,10 @@
+.cmake/
+.idea/
+CMakeFiles
+CMakeCache.txt
+Makefile
+*.ninja*
+*.cmake
+*.ppm
+raytracer
+Testing/
