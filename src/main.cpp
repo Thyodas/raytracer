@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     raytracer::Options options;
     options.width = 640;
     options.height = 480;
-    options.fov = 90;
+    options.fov = 30;
     options.backgroundColor = Vec3f(0.0, 0.0, 1);
     options.maxDepth = 5;
     options.bias = 0.00001;

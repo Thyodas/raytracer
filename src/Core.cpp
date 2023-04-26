@@ -124,10 +124,17 @@ namespace raytracer {
         uint32_t index = 0;
         for (uint32_t j = 0; j < options.height; ++j) {
             for (uint32_t i = 0; i < options.width; ++i) {
+                if (index % 2 == 1) {
+                    index++;
+                    continue;
+                }
                 float x = (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
                 float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
                 Vec3f dir = math::normalize(Vec3f(x, y, -1));
-                framebuffer[index++] = castRay(orig, dir, objects, lights, options, 0);
+                framebuffer[index] = castRay(orig, dir, objects, lights, options, 0);
+                if (index != 0)
+                    framebuffer[index - 1] = (framebuffer[index - 2] + framebuffer[index]) * 0.5;
+                index++;
             }
         }
 
