@@ -11,32 +11,86 @@
 #include "Primitives/MeshTriangle/MeshTriangle.hpp"
 #include "../shared/math/utils.hpp"
 #include "Physics/LightUtils.hpp"
+#include "Scene/Scene.hpp"
 
 #include <memory>
 
 namespace raytracer {
-    struct Options
-    {
-        uint32_t width;
-        uint32_t height;
-        float fov;
-        float imageAspectRatio;
-        uint8_t maxDepth;
-        Vec3f backgroundColor;
-        float bias;
+    class Core {
+        public:
+            ~Core() = default;
+            Core(uint32_t width = 640,
+                 uint32_t height = 480,
+                 float fov = 90,
+                 uint8_t maxDepth = 5,
+                 float bias = 0.00001,
+                 Vec3f backgroundColor = Vec3f(0.0, 0.0, 1)) :
+                 _scene(maxDepth, bias, backgroundColor),
+                 _width(width),
+                 _height(height),
+                 _fov(fov)
+            {
+                _framebuffer = std::unique_ptr<Vec3f>(new Vec3f[width * height]);
+            };
+
+            void setWidth(uint32_t width)
+            {
+                _width = width;
+            }
+            uint32_t getWidth(void) const
+            {
+                return _width;
+            }
+            void setHeight(uint32_t height)
+            {
+                _height = height;
+            }
+            uint32_t getHeight(void) const
+            {
+                return _height;
+            }
+            void setFov(float fov)
+            {
+                _fov = fov;
+            }
+            float getFov(void) const
+            {
+                return _fov;
+            }
+            void setMaxDepth(uint8_t maxDepth)
+            {
+                _scene.setMaxDepth(maxDepth);
+            }
+            uint8_t getMaxDepth(void) const
+            {
+                return _scene.getMaxDepth();
+            }
+            void setBias(float bias)
+            {
+                _scene.setBias(bias);
+            }
+            float getBias(void) const
+            {
+                return _scene.getBias();
+            }
+            void setBackGroundColor(Vec3f &backgroundColor)
+            {
+                _scene.setBackGroundColor(backgroundColor);
+            }
+            Vec3f getBackGroundColor(void) const
+            {
+                return _scene.getBackGroundColor();
+            }
+
+            void render(void);
+            void addObject(const std::shared_ptr<primitive::Object> &obj);
+            void addLight(const std::shared_ptr<physics::Light> &light);
+        private:
+            Scene _scene;
+            std::unique_ptr<Vec3f> _framebuffer;
+
+            uint32_t _width;
+            uint32_t _height;
+            float _fov;
     };
-    void render(
-        const Options &options,
-        const std::vector<std::unique_ptr<primitive::Object>> &objects,
-        const std::vector<std::unique_ptr<physics::Light>> &lights);
-    Vec3f castRay(
-        const Vec3f &orig, const Vec3f &dir,
-        const std::vector<std::unique_ptr<primitive::Object>> &objects,
-        const std::vector<std::unique_ptr<physics::Light>> &lights,
-        const Options &options,
-        uint32_t depth);
-    bool trace(
-        const Vec3f &orig, const Vec3f &dir,
-        const std::vector<std::unique_ptr<primitive::Object>> &objects,
-        float &tNear, uint32_t &index, Vec2f &uv, primitive::Object **hitObject);
 }

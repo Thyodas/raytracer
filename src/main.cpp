@@ -20,6 +20,8 @@
 
 int main(int argc, char **argv)
 {
+    raytracer::Core core;
+    core.setFov(30);
     std::vector<std::unique_ptr<primitive::Object>> objects;
     std::vector<std::unique_ptr<physics::Light>> lights;
 
@@ -33,8 +35,9 @@ int main(int argc, char **argv)
     //sph2->diffuseColor = Vec3f(0.6, 0, 0);
     sph2->materialType = primitive::REFLECTION_AND_REFRACTION;
 
-    objects.push_back(std::unique_ptr<primitive::Sphere>(sph1));
-    objects.push_back(std::unique_ptr<primitive::Sphere>(sph2));
+    std::shared_ptr<primitive::Sphere> s1 = std::make_shared<primitive::Sphere>(*sph1);
+    core.addObject(s1);
+    core.addObject(std::shared_ptr<primitive::Sphere>(sph2));
 
     std::vector<Vec3f> verts = {{-5,-3,-6}, {5,-3,-6}, {5,-3,-16}, {-5,-3,-16}};
     std::vector<uint32_t> vertIndex = {0, 1, 3, 1, 2, 3};
@@ -43,19 +46,11 @@ int main(int argc, char **argv)
     mesh->refractionCoefficient = 1.5;
     mesh->materialType = primitive::DIFFUSE_AND_GLOSSY;
 
-    objects.push_back(std::unique_ptr<primitive::MeshTriangle>(mesh));
+    core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
 
-    lights.push_back(std::unique_ptr<physics::Light>(new physics::Light(Vec3f(-20, 70, 20), 0.5)));
-    lights.push_back(std::unique_ptr<physics::Light>(new physics::Light(Vec3f(30, 50, -12), 1)));
+    core.addLight(std::shared_ptr<physics::Light>(new physics::Light(Vec3f(-20, 70, 20), 0.5)));
+    core.addLight(std::shared_ptr<physics::Light>(new physics::Light(Vec3f(30, 50, -12), 1)));
 
-    raytracer::Options options;
-    options.width = 640;
-    options.height = 480;
-    options.fov = 30;
-    options.backgroundColor = Vec3f(0.0, 0.0, 1);
-    options.maxDepth = 5;
-    options.bias = 0.00001;
-
-    Parser::parseObj("./src/Parser/rose_cube.obj", true);
-    raytracer::render(options, objects, lights);
+    //Parser::parseObj("./src/Parser/rose_cube.obj", false);
+    core.render();
 }
