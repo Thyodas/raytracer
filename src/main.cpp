@@ -36,9 +36,9 @@ int main(int argc, char **argv)
     objects.push_back(std::unique_ptr<primitive::Sphere>(sph1));
     objects.push_back(std::unique_ptr<primitive::Sphere>(sph2));
 
-    Vec3f verts[4] = {{-5,-3,-6}, {5,-3,-6}, {5,-3,-16}, {-5,-3,-16}};
-    uint32_t vertIndex[6] = {0, 1, 3, 1, 2, 3};
-    Vec2f st[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+    std::vector<Vec3f> verts = {{-5,-3,-6}, {5,-3,-6}, {5,-3,-16}, {-5,-3,-16}};
+    std::vector<uint32_t> vertIndex = {0, 1, 3, 1, 2, 3};
+    std::vector<Vec2f> st = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
     primitive::MeshTriangle *mesh = new primitive::MeshTriangle(verts, vertIndex, 2, st);
     mesh->refractionCoefficient = 1.5;
     mesh->materialType = primitive::DIFFUSE_AND_GLOSSY;

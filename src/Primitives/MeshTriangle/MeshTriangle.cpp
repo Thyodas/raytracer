@@ -10,22 +10,15 @@
 
 namespace primitive {
     MeshTriangle::MeshTriangle(
-        const Vec3f *verts,
-        const uint32_t *vertsIndex,
+        std::vector<Vec3f> &verts,
+        std::vector<uint32_t> &vertsIndex,
         const uint32_t &numTris,
-        const Vec2f *textCoord)
+        std::vector<Vec2f> &st)
     {
-        uint32_t maxIndex = 0;
-        for (uint32_t i = 0; i < numTris * 3; ++i)
-            if (vertsIndex[i] > maxIndex) maxIndex = vertsIndex[i];
-        maxIndex += 1;
-        vertices = std::unique_ptr<Vec3f[]>(new Vec3f[maxIndex]);
-        memcpy(vertices.get(), verts, sizeof(Vec3f) * maxIndex);
-        vertexIndex = std::unique_ptr<uint32_t[]>(new uint32_t[numTris * 3]);
-        memcpy(vertexIndex.get(), vertsIndex, sizeof(uint32_t) * numTris * 3);
+        vertices = verts;
+        vertexIndex = vertsIndex;
+        textCoords = st;
         numTriangles = numTris;
-        textCoords = std::unique_ptr<Vec2f[]>(new Vec2f[maxIndex]);
-        memcpy(textCoords.get(), textCoord, sizeof(Vec2f) * maxIndex);
     }
 
     bool MeshTriangle::MollerTrumbore(
@@ -65,9 +58,9 @@ namespace primitive {
     {
         bool intersect = false;
         for (uint32_t i = 0; i < numTriangles; ++i) {
-            const Vec3f & a = vertices[vertexIndex[i * 3]];
-            const Vec3f & b = vertices[vertexIndex[i * 3 + 1]];
-            const Vec3f & c = vertices[vertexIndex[i * 3 + 2]];
+            const Vec3f &a = vertices[vertexIndex[i * 3]];
+            const Vec3f &b = vertices[vertexIndex[i * 3 + 1]];
+            const Vec3f &c = vertices[vertexIndex[i * 3 + 2]];
             float t = 0;
             float u = 0;
             float v = 0;
@@ -91,12 +84,15 @@ namespace primitive {
                 Vec2f &textCoord)
     const
     {
+        //Face normal
         const Vec3f &a = vertices[vertexIndex[index * 3]];
         const Vec3f &b = vertices[vertexIndex[index * 3 + 1]];
         const Vec3f &c = vertices[vertexIndex[index * 3 + 2]];
         Vec3f v0 = math::normalize(b - a);
-        Vec3f v1 = math::normalize(c - b);
+        Vec3f v1 = math::normalize(c - a);
         normal = math::normalize(math::crossProduct(v0, v1));
+
+        //Texture coordinates
         const Vec2f &txt0 = textCoords[vertexIndex[index * 3]];
         const Vec2f &txt1 = textCoords[vertexIndex[index * 3 + 1]];
         const Vec2f &txt2 = textCoords[vertexIndex[index * 3 + 2]];
