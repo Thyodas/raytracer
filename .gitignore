@@ -8,5 +8,6 @@ Makefile
 *.ppm
 Testing/
 ./raytracer
+raytracer
 build
 .vscode
