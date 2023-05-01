@@ -11,6 +11,10 @@
 #include "../../shared/math/Vectors/Vec3.hpp"
 #include "../../shared/math/Vectors/Vec2.hpp"
 
+namespace raytracer {
+    class Core;
+}
+
 namespace Parser {
 
     namespace ObjParserData {
