@@ -9,7 +9,9 @@
 #include "../../../shared/math/analysis/analysis.hpp"
 
 namespace primitive {
-    Sphere::Sphere(const Vec3f &center_, const float &radius_) : center(center_), radius(radius_), radius2(radius_ * radius_) {}
+    Sphere::Sphere(const Matrix44f &o2w,
+                  const Vec3f &center_,
+                  const float &radius_) : center(center_), radius(radius_), radius2(radius_ * radius_), Object(o2w) {}
 
     bool Sphere::intersect(
             const Vec3f &origin,

@@ -12,6 +12,7 @@
 #include "Core.hpp"
 #include "../shared/math/Vectors/Vec3.hpp"
 #include "../shared/math/Vectors/Vec2.hpp"
+#include "../shared/math/Matrix/Matrix44.hpp"
 #include "Parser.hpp"
 #include "Parser/ObjParser.hpp"
 
@@ -20,8 +21,12 @@
 
 int main(int argc, char **argv)
 {
-    raytracer::Core core;
-    core.setFov(90);
+    Matrix44f cameraToWorld = Matrix44f(1, 0, 0, 0,
+                                        0, 1, 0, 0,
+                                        0, 0, 1, 0,
+                                        0, 0, 0, 1);
+    raytracer::Core core(cameraToWorld);
+    core.setFov(120);
 
     // primitive::Sphere *sph1 = new primitive::Sphere(Vec3f(-1, 0, -12), 2);
     // sph1->materialType = primitive::DIFFUSE_AND_GLOSSY;
@@ -46,9 +51,20 @@ int main(int argc, char **argv)
 
     //core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
 
+    Parser::ObjParserData::transformationsOptions opt = {
+        // .pos = Vec3f(0, 0, -50),
+        // .scaleFactorX = 0.5,
+        // .scaleFactorY = 0.5,
+        // .scaleFactorZ = 0.5,
+        // .rotateXAxis = 85,
+        // .rotateYAxis = -90,
+        // .rotateZAxis = -90,
+        // .rotateZAxis = 45,
+    };
+
     core.addLight(std::shared_ptr<physics::Light>(new physics::Light(Vec3f(-20, 70, 20), 0.5)));
     core.addLight(std::shared_ptr<physics::Light>(new physics::Light(Vec3f(30, 50, -12), 1)));
 
-    Parser::parseObj(core, "./plane.obj", false);
+    //Parser::parseObj(core, opt, "./plane.obj", false);
     core.render();
 }

@@ -13,12 +13,13 @@
 namespace primitive {
 
     MeshTriangle::MeshTriangle(
+        const Matrix44f &o2w,
         const std::vector<int> &faceIndex,
         const std::vector<uint32_t> &vertexIndex,
         const std::vector<Vec3f> &vertexArray,
         const std::vector<Vec3f> &normals,
         const std::vector<Vec2f> &st
-    ) : Object()
+    ) : Object(o2w)
     {
         uint32_t k = 0;
         uint32_t maxVertexIndex = 0;
@@ -31,7 +32,10 @@ namespace primitive {
         }
         maxVertexIndex++;
         for (uint32_t i = 0; i < maxVertexIndex; ++i) {
-            _vertices.push_back(vertexArray[i]);
+            Vec3f dest;
+            objectToWorld.multVecMatrix(vertexArray[i], dest);
+            _vertices.push_back(dest);
+            std::cout << _vertices[i] << std::endl;
         }
         uint32_t l = 0;
         k = 0;
