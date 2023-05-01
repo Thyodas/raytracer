@@ -7,18 +7,68 @@
 
 #include "MeshTriangle.hpp"
 #include <cstring>
+#include <algorithm>
+#include <limits>
 
 namespace primitive {
+
     MeshTriangle::MeshTriangle(
-        std::vector<Vec3f> &verts,
-        std::vector<uint32_t> &vertsIndex,
-        const uint32_t &numTris,
-        std::vector<Vec2f> &st)
+        const std::vector<int> &faceIndex,
+        const std::vector<uint32_t> &vertexIndex,
+        const std::vector<Vec3f> &vertexArray,
+        const std::vector<Vec3f> &normals,
+        const std::vector<Vec2f> &st
+    ) : Object()
     {
-        vertices = verts;
-        vertexIndex = vertsIndex;
-        textCoords = st;
-        numTriangles = numTris;
+        uint32_t k = 0;
+        uint32_t maxVertexIndex = 0;
+        for (size_t i = 0; i < faceIndex.size(); ++i) {
+            _nbTriangles += faceIndex[i] - 2;
+            for (uint32_t j = 0; j < faceIndex[i]; ++j)
+                if (vertexIndex[k + j] > maxVertexIndex)
+                    maxVertexIndex = vertexIndex[k + j];
+            k += faceIndex[i];
+        }
+        maxVertexIndex++;
+        for (uint32_t i = 0; i < maxVertexIndex; ++i) {
+            _vertices.push_back(vertexArray[i]);
+        }
+        uint32_t l = 0;
+        k = 0;
+        for (size_t i = 0; i < faceIndex.size(); ++i) {
+            for (uint32_t j = 0; j < faceIndex[i] - 2; ++j) {
+                _vertexIndex.push_back(vertexIndex[k]);
+                _vertexIndex.push_back(vertexIndex[k + j + 1]);
+                _vertexIndex.push_back(vertexIndex[k + j + 2]);
+                if (!normals.empty()) {
+                    _normalCoords.push_back(normals[k]);
+                    _normalCoords.push_back(normals[k + j + 1]);
+                    _normalCoords.push_back(normals[k + j + 2]);
+                    _normalCoords[l] = math::normalize(_normalCoords[l]);
+                    _normalCoords[l + 1] = math::normalize(_normalCoords[l + 1]);
+                    _normalCoords[l + 2] = math::normalize(_normalCoords[l + 2]);
+                }
+                if (!st.empty()) {
+                    _textCoords.push_back(st[k]);
+                    _textCoords.push_back(st[k + j + 1]);
+                    _textCoords.push_back(st[k + j + 2]);
+                }
+                l += 3;
+            }
+            k += faceIndex[i];
+        }
+        if (!_textCoords.empty())
+            return;
+        for (size_t i = 0; i < _vertices.size(); ++i) {
+            if (i % 4 == 0)
+                _textCoords.push_back(Vec2f(0, 0));
+            if (i % 4 == 1)
+                _textCoords.push_back(Vec2f(1, 0));
+            if (i % 4 == 2)
+                _textCoords.push_back(Vec2f(1, 1));
+            if (i % 4 == 3)
+                _textCoords.push_back(Vec2f(0, 1));
+        }
     }
 
     bool MeshTriangle::MollerTrumbore(
@@ -27,24 +77,23 @@ namespace primitive {
                 float &tnear, float &u, float &v)
     const
     {
+        const float espilon = 1e-8;
         Vec3f v0 = b - a;
         Vec3f v1 = c - a;
         Vec3f pvec = math::crossProduct(direction, v1);
         float det = math::dotProduct(v0, pvec);
-        if (det == 0 || det < 0)
-            return false;
-        Vec3f tvec = origin - a;
-        u = math::dotProduct(tvec, pvec);
-        if (u < 0 || u > det)
-            return false;
-        Vec3f qvec = math::crossProduct(tvec, v0);
-        v = math::dotProduct(direction, qvec);
-        if (v < 0 || u + v > det)
+        if (det < espilon)
             return false;
         float invDet = 1 / det;
+        Vec3f tvec = origin - a;
+        u = math::dotProduct(tvec, pvec) * invDet;
+        if (u < 0 || u > 1)
+            return false;
+        Vec3f qvec = math::crossProduct(tvec, v0);
+        v = math::dotProduct(direction, qvec) * invDet;
+        if (v < 0 || u + v > 1)
+            return false;
         tnear = math::dotProduct(v1, qvec) * invDet;
-        u *= invDet;
-        v *= invDet;
         return true;
     }
 
@@ -56,12 +105,13 @@ namespace primitive {
             Vec2f &uv)
     const
     {
+        uint32_t j = 0;
         bool intersect = false;
-        for (uint32_t i = 0; i < numTriangles; ++i) {
-            const Vec3f &a = vertices[vertexIndex[i * 3]];
-            const Vec3f &b = vertices[vertexIndex[i * 3 + 1]];
-            const Vec3f &c = vertices[vertexIndex[i * 3 + 2]];
-            float t = 0;
+        for (uint32_t i = 0; i < _nbTriangles; ++i) {
+            const Vec3f &a = _vertices[_vertexIndex[j]];
+            const Vec3f &b = _vertices[_vertexIndex[j + 1]];
+            const Vec3f &c = _vertices[_vertexIndex[j + 2]];
+            float t = std::numeric_limits<float>::max();
             float u = 0;
             float v = 0;
             if (MollerTrumbore(a, b, c, origin, direction, t, u, v) && t < tnear) {
@@ -71,6 +121,7 @@ namespace primitive {
                 index = i;
                 intersect |= true;
             }
+            j += 3;
         }
 
         return intersect;
@@ -85,18 +136,20 @@ namespace primitive {
     const
     {
         //Face normal
-        const Vec3f &a = vertices[vertexIndex[index * 3]];
-        const Vec3f &b = vertices[vertexIndex[index * 3 + 1]];
-        const Vec3f &c = vertices[vertexIndex[index * 3 + 2]];
-        Vec3f v0 = math::normalize(b - a);
-        Vec3f v1 = math::normalize(c - a);
-        normal = math::normalize(math::crossProduct(v0, v1));
+        const Vec3f &a = _vertices[_vertexIndex[index * 3]];
+        const Vec3f &b = _vertices[_vertexIndex[index * 3 + 1]];
+        const Vec3f &c = _vertices[_vertexIndex[index * 3 + 2]];
+        Vec3f v0 = b - a;
+        Vec3f v1 = c - a;
+        normal = math::normalize(math::crossProduct(v1, v0));
 
         //Texture coordinates
-        const Vec2f &txt0 = textCoords[vertexIndex[index * 3]];
-        const Vec2f &txt1 = textCoords[vertexIndex[index * 3 + 1]];
-        const Vec2f &txt2 = textCoords[vertexIndex[index * 3 + 2]];
-        textCoord = txt0 * (1 - uv.x - uv.y) + txt1 * uv.x + txt2 * uv.y;
+        if (!_textCoords.empty()) {
+            const Vec2f &txt0 = _textCoords[_vertexIndex[index * 3]];
+            const Vec2f &txt1 = _textCoords[_vertexIndex[index * 3 + 1]];
+            const Vec2f &txt2 = _textCoords[_vertexIndex[index * 3 + 2]];
+            textCoord = txt0 * (1 - uv.x - uv.y) + txt1 * uv.x + txt2 * uv.y;
+        }
     }
 
     Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &textCoord) const
