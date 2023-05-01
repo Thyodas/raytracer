@@ -9,6 +9,7 @@
 
 #include "../shared/math/Vectors/Vec3.hpp"
 #include "../shared/math/Vectors/Vec2.hpp"
+#include "../shared/math/Matrix/Matrix44.hpp"
 
 namespace primitive {
     enum MaterialType {
@@ -20,7 +21,7 @@ namespace primitive {
     class Object {
         public:
             virtual ~Object() = default;
-            Object() : materialType(DIFFUSE_AND_GLOSSY), refractionCoefficient(1.3), kd(0.8), ks(0.2), diffuseColor(0.2), specularExponent(25) {};
+            Object(const Matrix44f &o2w) : materialType(DIFFUSE_AND_GLOSSY), refractionCoefficient(1.3), kd(0.8), ks(0.2), diffuseColor(0.2), specularExponent(25), objectToWorld(o2w), worldtoObject(o2w.inverse()) {};
             virtual bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &, Vec2f &) const = 0;
             /**
              * Calculates the surface properties of a mesh triangle at a given point.
@@ -46,5 +47,7 @@ namespace primitive {
             float ks;
             Vec3f diffuseColor;
             float specularExponent;
+            Matrix44f objectToWorld;
+            Matrix44f worldtoObject;
     };
 }
