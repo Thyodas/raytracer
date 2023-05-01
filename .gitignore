@@ -1,2 +1,12 @@
+.cmake/
+.idea/
+CMakeFiles
+CMakeCache.txt
+Makefile
+*.ninja*
+*.cmake
+*.ppm
+Testing/
 ./raytracer
 build
+.vscode

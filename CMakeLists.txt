@@ -8,6 +8,7 @@ set(SRCS
     src/Physics/LightUtils.cpp
     src/Primitives/MeshTriangle/MeshTriangle.cpp
     src/Primitives/Sphere/Sphere.cpp
+    src/Parser/ObjParser.cpp
     shared/math/analysis/analysis.cpp
     shared/math/Vectors/VecUtils.cpp
     shared/math/utils.cpp
