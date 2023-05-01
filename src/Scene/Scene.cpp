@@ -102,7 +102,8 @@ namespace raytracer {
                         Vec3f reflectionDirection = physics::reflect(-lightDir, N);
                         specularColor += powf(std::max(0.f, -math::dotProduct(reflectionDirection, dir)), hitObject->specularExponent) * lights[i]->intensity;
                     }
-                    hitColor = lightAmt * hitObject->evalDiffuseColor(txtCoord) * hitObject->kd + specularColor * hitObject->ks;
+                    //hitColor = lightAmt * hitObject->evalDiffuseColor(txtCoord) * hitObject->kd + specularColor * hitObject->ks;
+                    hitColor = hitObject->evalDiffuseColor(txtCoord);
                     break;
                 }
             }

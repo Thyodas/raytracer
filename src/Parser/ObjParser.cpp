@@ -6,7 +6,9 @@
 */
 
 #include "ObjParser.hpp"
+#include "../Primitives/MeshTriangle/MeshTriangle.hpp"
 #include <limits>
+#include <memory>
 
 namespace Parser {
     inline void printObjects(Parser::ObjParser &parser)
@@ -35,18 +37,27 @@ namespace Parser {
                 std::cout << data.objects[i].st[j] << std::endl;
         }
     }
-    int parseObj(const std::string& filePath, bool debug)
+    int parseObj(raytracer::Core &core, const std::string& filePath, bool debug)
     {
         try {
             Parser::ObjParser test;
             test.parse(filePath);
             if (debug)
                 printObjects(test);
+            Parser::ObjParserData::Data data = test.getData();
+            for (size_t i = 0; i < data.objects.size(); ++i) {
+                primitive::MeshTriangle *mesh =
+                    new primitive::MeshTriangle(data.objects[i].faceIndex,
+                                                data.objects[i].vertexIndex,
+                                                data.objects[i].vertexArray,
+                                                data.objects[i].normals,
+                                                data.objects[i].st);
+                core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
+            }
         } catch (std::exception &e) {
             std::cerr << "raytracer: " << e.what() << "." << std::endl;
-            return 84;
+            return {};
         }
-        return 0;
     }
 
     void command_mtllib(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
@@ -57,7 +68,7 @@ namespace Parser {
 
     void command_f(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
     {
-        if (argv.size() <= 4)
+        if (argv.size() < 4)
             throw Parser::ParseFailureException("invalid number of arguments");
 
         for (int i = 1; i < argv.size(); ++i) {
@@ -106,7 +117,7 @@ namespace Parser {
     {
         if (argv.size() < 4 || argv.size() > 5)
             throw Parser::ParseFailureException("invalid number of arguments");
-        Vec3f vertice(std::stod(argv[1]), std::stod(argv[2]), std::stod(argv[3]));;
+        Vec3f vertice(std::stod(argv[1]), std::stod(argv[2]), -std::fabs(std::stod(argv[3])));
         data.objects[data.obj_index].vertexArray.push_back(vertice);
     }
 

@@ -5,6 +5,8 @@
 ** Core.hpp
 */
 
+#pragma once
+
 #include "Object.hpp"
 #include "Light.hpp"
 #include "Primitives/Sphere/Sphere.hpp"
@@ -18,7 +20,6 @@
 namespace raytracer {
     class Core {
         public:
-            ~Core() = default;
             Core(uint32_t width = 640,
                  uint32_t height = 480,
                  float fov = 90,

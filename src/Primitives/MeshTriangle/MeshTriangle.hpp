@@ -20,10 +20,12 @@ namespace primitive {
         public:
             ~MeshTriangle() = default;
             MeshTriangle(
-                std::vector<Vec3f> &verts,
-                std::vector<uint32_t> &vertsIndex,
-                const uint32_t &numTris,
-                std::vector<Vec2f> &st);
+                const std::vector<int> &faceIndex,
+                const std::vector<uint32_t> &vertexIndex,
+                const std::vector<Vec3f> &vertexArray,
+                const std::vector<Vec3f> &normals = {},
+                const std::vector<Vec2f> &st = {}
+            );
 
             bool intersect(
                 const Vec3f &origin,
@@ -44,10 +46,11 @@ namespace primitive {
 
             Vec3f evalDiffuseColor(const Vec2f &textCoord) const override;
 
-            std::vector<Vec3f> vertices;
-            uint32_t numTriangles;
-            std::vector<uint32_t> vertexIndex;
-            std::vector<Vec2f> textCoords;
+            std::vector<Vec3f> _vertices;
+            uint32_t _nbTriangles = 0;
+            std::vector<uint32_t> _vertexIndex;
+            std::vector<Vec2f> _textCoords;
+            std::vector<Vec3f> _normalCoords;
         private:
             bool MollerTrumbore(
                 const Vec3f &a, const Vec3f &b, const Vec3f &c,

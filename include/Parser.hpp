@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "../src/Core.hpp"
+
 #include <string>
 #include <stdexcept>
 #include <iostream>
@@ -142,6 +144,6 @@ namespace Parser {
         _commands[name] = function;
     }
 
-    int parseObj(const std::string& filePath, bool debug = false);
+    int parseObj(raytracer::Core &core, const std::string& filePath, bool debug = false);
 
 } // Parser
