@@ -8,24 +8,35 @@
 #pragma once
 
 #include "Parser.hpp"
+#include "../../shared/math/Vectors/Vec3.hpp"
+#include "../../shared/math/Vectors/Vec2.hpp"
 
 namespace Parser {
 
     namespace ObjParserData {
-        struct Vertices {
-            double x;
-            double y;
-            double z;
-            double w = 1.0;
+
+        struct VertexInfo {
+            Vec3f vertice;
+            Vec2f st;
+            Vec3f normal;
+
+            VertexInfo() : st(INFINITY), normal(INFINITY) {}
         };
 
         struct Object {
             std::string name = "Default Object";
-            std::vector<Vertices> vertices;
+            std::vector<Vec3f> vertexArray;
+            std::vector<int> faceIndex;
+            std::vector<uint32_t> vertexIndex;
+            std::vector<Vec3f> normals;
+            std::vector<Vec2f> st;
         };
 
         struct Data {
             std::vector<Object> objects;
+            std::vector<Vec3f> tmpVertices;
+            std::vector<Vec3f> tmpNormals;
+            std::vector<Vec2f> tmpSt;
             std::size_t obj_index = 0;
         };
     }

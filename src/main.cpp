@@ -13,6 +13,7 @@
 #include "../shared/math/Vectors/Vec3.hpp"
 #include "../shared/math/Vectors/Vec2.hpp"
 #include "Parser.hpp"
+#include "Parser/ObjParser.hpp"
 
 #include <vector>
 #include <memory>
@@ -55,6 +56,6 @@ int main(int argc, char **argv)
     options.maxDepth = 5;
     options.bias = 0.00001;
 
-    Parser::parseObj("./src/Parser/rose_cube.obj");
+    Parser::parseObj("./src/Parser/rose_cube.obj", true);
     raytracer::render(options, objects, lights);
 }

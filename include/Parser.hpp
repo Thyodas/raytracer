@@ -142,6 +142,6 @@ namespace Parser {
         _commands[name] = function;
     }
 
-    int parseObj(const std::string& filePath);
+    int parseObj(const std::string& filePath, bool debug = false);
 
 } // Parser
