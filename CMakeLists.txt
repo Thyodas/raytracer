@@ -5,6 +5,7 @@ project(RayTracer)
 set(SRCS
     src/main.cpp
     src/Core.cpp
+    src/Scene/Scene.cpp
     src/Physics/LightUtils.cpp
     src/Primitives/MeshTriangle/MeshTriangle.cpp
     src/Primitives/Sphere/Sphere.cpp
