@@ -7,6 +7,9 @@
 
 #include "ObjParser.hpp"
 #include "../Primitives/MeshTriangle/MeshTriangle.hpp"
+#include "../../shared/math/Matrix/Matrix44.hpp"
+#include "../../shared/math/Matrix/MatrixUtils.hpp"
+#include "../../shared/math/utils.hpp"
 #include <limits>
 #include <memory>
 
@@ -37,7 +40,39 @@ namespace Parser {
                 std::cout << data.objects[i].st[j] << std::endl;
         }
     }
-    int parseObj(raytracer::Core &core, const std::string& filePath, bool debug)
+
+    std::vector<Matrix44f> computeTransformationMatrixes(std::vector<Vec3f> vertexArray,
+                                         Parser::ObjParserData::transformationsOptions &opt)
+    {
+        std::vector<Matrix44f> result;
+        Vec3f center;
+        for (size_t i = 0; i < vertexArray.size(); ++i)
+            center = center + vertexArray[i];
+        center.x /= vertexArray.size();
+        center.y /= vertexArray.size();
+        center.z /= vertexArray.size();
+        Matrix44f rotationXMatrix;
+        Matrix44f rotationYMatrix;
+        Matrix44f rotationZMatrix;
+        Matrix44f scaleMatrix = math::getScaleMatrix<float>(opt.scaleFactorX, opt.scaleFactorY, opt.scaleFactorZ);
+        result.push_back(scaleMatrix);
+        if (opt.rotateZAxis != 0)
+            rotationZMatrix = math::getRotationMatrixZ<float>(math::deg2Rad(opt.rotateZAxis));
+        result.push_back(rotationZMatrix);
+        if (opt.rotateYAxis != 0)
+            rotationYMatrix = math::getRotationMatrixY<float>(math::deg2Rad(opt.rotateYAxis));
+        result.push_back(rotationYMatrix);
+        if (opt.rotateXAxis != 0)
+            rotationXMatrix = math::getRotationMatrixX<float>(math::deg2Rad(opt.rotateXAxis));
+        result.push_back(rotationXMatrix);
+        Vec3f translation = opt.pos - center;
+        Matrix44f translationMatrix = math::getTranslationMatrix<float>(translation);
+        result.push_back(translationMatrix);
+        return result;
+    }
+
+    int parseObj(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt,
+                 const std::string& filePath, bool debug)
     {
         try {
             Parser::ObjParser test;
@@ -46,8 +81,11 @@ namespace Parser {
                 printObjects(test);
             Parser::ObjParserData::Data data = test.getData();
             for (size_t i = 0; i < data.objects.size(); ++i) {
+                std::vector<Matrix44f> matrixes = computeTransformationMatrixes(data.objects[i].vertexArray, opt);
+                Matrix44f objectToWorld = matrixes[0] * matrixes[1] * matrixes[2] * matrixes[3] * matrixes[4];
                 primitive::MeshTriangle *mesh =
-                    new primitive::MeshTriangle(data.objects[i].faceIndex,
+                    new primitive::MeshTriangle(objectToWorld,
+                                                data.objects[i].faceIndex,
                                                 data.objects[i].vertexIndex,
                                                 data.objects[i].vertexArray,
                                                 data.objects[i].normals,
@@ -117,8 +155,18 @@ namespace Parser {
     {
         if (argv.size() < 4 || argv.size() > 5)
             throw Parser::ParseFailureException("invalid number of arguments");
-        Vec3f vertice(std::stod(argv[1]), std::stod(argv[2]), -std::fabs(std::stod(argv[3])));
+        Vec3f vertice(std::stod(argv[1]), std::stod(argv[3]), std::stod(argv[2]));
         data.objects[data.obj_index].vertexArray.push_back(vertice);
+    }
+
+    void command_s(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    {
+        return;
+    }
+
+    void command_g(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    {
+        return;
     }
 
     void command_o(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
@@ -136,6 +184,11 @@ namespace Parser {
         data.tmpSt.clear();
         data.tmpVertices.clear();
     }
+    
+    void command_usemtl(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    {
+        return;
+    }
 
     ObjParser::ObjParser()
     {
@@ -147,6 +200,9 @@ namespace Parser {
         addCommand("vt", &command_vt);
         addCommand("vn", &command_vn);
         addCommand("f", &command_f);
+        addCommand("s", &command_s);
+        addCommand("g", &command_g);
+        addCommand("usemtl", &command_usemtl);
     }
 }
 

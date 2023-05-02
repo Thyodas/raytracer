@@ -43,6 +43,16 @@ namespace Parser {
             std::vector<Vec2f> tmpSt;
             std::size_t obj_index = 0;
         };
+
+        struct transformationsOptions {
+            Vec3f pos;
+            float scaleFactorX = 1;
+            float scaleFactorY = 1;
+            float scaleFactorZ = 1;
+            float rotateXAxis = 0;
+            float rotateYAxis = 0;
+            float rotateZAxis = 0;
+        };
     }
 
 

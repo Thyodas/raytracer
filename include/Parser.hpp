@@ -20,6 +20,10 @@
 
 namespace Parser {
 
+    namespace ObjParserData {
+        struct transformationsOptions;
+    }
+
     class AException : public std::exception {
         public:
             [[nodiscard]] const char* what() const noexcept override {
@@ -144,6 +148,7 @@ namespace Parser {
         _commands[name] = function;
     }
 
-    int parseObj(raytracer::Core &core, const std::string& filePath, bool debug = false);
+    int parseObj(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt,
+                 const std::string& filePath, bool debug = false);
 
 } // Parser

@@ -12,6 +12,7 @@
 #include "Primitives/Sphere/Sphere.hpp"
 #include "Primitives/MeshTriangle/MeshTriangle.hpp"
 #include "../shared/math/utils.hpp"
+#include "../shared/math/Matrix/Matrix44.hpp"
 #include "Physics/LightUtils.hpp"
 #include "Scene/Scene.hpp"
 
@@ -20,7 +21,8 @@
 namespace raytracer {
     class Core {
         public:
-            Core(uint32_t width = 640,
+            Core(Matrix44f &c2w,
+                 uint32_t width = 640,
                  uint32_t height = 480,
                  float fov = 90,
                  uint8_t maxDepth = 5,
@@ -29,7 +31,8 @@ namespace raytracer {
                  _scene(maxDepth, bias, backgroundColor),
                  _width(width),
                  _height(height),
-                 _fov(fov)
+                 _fov(fov),
+                _cameraToWorld(c2w)
             {
                 _framebuffer = std::unique_ptr<Vec3f>(new Vec3f[width * height]);
             };
@@ -88,6 +91,7 @@ namespace raytracer {
             void addLight(const std::shared_ptr<physics::Light> &light);
         private:
             Scene _scene;
+            Matrix44f _cameraToWorld;
             std::unique_ptr<Vec3f> _framebuffer;
 
             uint32_t _width;

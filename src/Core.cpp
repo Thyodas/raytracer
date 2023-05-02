@@ -27,20 +27,18 @@ namespace raytracer {
     {
         float scale = tan(math::deg2Rad(_fov * 0.5));
         float imageAspectRatio = _width / (float)_height;
-        Vec3f orig(0);
+        Vec3f orig;
+        _cameraToWorld.multVecMatrix(Vec3f(0), orig);
+        std::cout << orig << std::endl;
         uint32_t index = 0;
         for (uint32_t j = 0; j < _height; ++j) {
             for (uint32_t i = 0; i < _width; ++i) {
-                if (index % 2 == 1) {
-                    index++;
-                    continue;
-                }
                 float x = (2 * (i + 0.5) / (float)_width - 1) * imageAspectRatio * scale;
                 float y = (1 - 2 * (j + 0.5) / (float)_height) * scale;
-                Vec3f dir = math::normalize(Vec3f(x, y, -1));
+                Vec3f dir;
+                _cameraToWorld.multVecMatrix(Vec3f(x, y, -1), dir);
+                dir = math::normalize(dir);
                 (_framebuffer.get())[index] = _scene.castRay(orig, dir, 0);
-                if (index != 0)
-                    (_framebuffer.get())[index - 1] = ((_framebuffer.get())[index - 2] + (_framebuffer.get())[index]) * 0.5;
                 index++;
             }
         }

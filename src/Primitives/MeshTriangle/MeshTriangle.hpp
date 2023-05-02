@@ -20,6 +20,7 @@ namespace primitive {
         public:
             ~MeshTriangle() = default;
             MeshTriangle(
+                const Matrix44f &o2w,
                 const std::vector<int> &faceIndex,
                 const std::vector<uint32_t> &vertexIndex,
                 const std::vector<Vec3f> &vertexArray,
