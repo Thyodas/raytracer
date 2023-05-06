@@ -90,6 +90,10 @@ namespace Parser {
                                                 data.objects[i].vertexArray,
                                                 data.objects[i].normals,
                                                 data.objects[i].st);
+                mesh->kd = 0.8;
+                mesh->ks = 2;
+                mesh->refractionCoefficient = 0.8;
+                mesh->specularExponent = 50;
                 core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
             }
         } catch (std::exception &e) {

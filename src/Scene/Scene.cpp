@@ -19,44 +19,53 @@ namespace raytracer {
         lights.push_back(light);
     }
 
-    bool Scene::trace(const Vec3f &orig, const Vec3f &dir,
-                      float &tNear, uint32_t &index, Vec2f &uv, primitive::Object **hitObject)
+    bool Scene::trace(
+        const Vec3f &origin, const Vec3f &direction,
+        IsectInfo &isect,
+        physics::RayType rayType)
     {
-        *hitObject = nullptr;
+        isect.hitObject = nullptr;
         for (uint32_t k = 0; k < objects.size(); ++k) {
-            float tNearK = _infinity;
-            uint32_t indexK;
-            Vec2f uvK;
-            if (objects[k]->intersect(orig, dir, tNearK, indexK, uvK) && tNearK < tNear) {
-                *hitObject = objects[k].get();
-                tNear = tNearK;
-                index = indexK;
-                uv = uvK;
+            float tNear = std::numeric_limits<float>::max();
+            uint32_t index = 0;
+            Vec2f uv;
+            if (objects[k]->intersect(origin, direction, tNear, index, uv) && tNear < isect.tNear) {
+                if (rayType == physics::SHADOW_RAY && objects[k]->materialType == primitive::REFLECTION_AND_REFRACTION)
+                    continue;
+                isect.hitObject = objects[k].get();
+                isect.tNear = tNear;
+                isect.index = index;
+                isect.uv = uv;
             }
         }
 
-        return (*hitObject != nullptr);
+        return (isect.hitObject != nullptr);
+    }
+
+    Vec3f computeDiffuseColorChannel(Vec3f N, Vec3f lightDir, Vec3f lightIntensity)
+    {
+        float cosAngIncidence = math::dotProduct(N, -lightDir);
+        return lightIntensity * std::max(0.f, cosAngIncidence);
     }
 
     Vec3f Scene::castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth)
     {
         if (depth > _maxDepth)
             return _backgroundColor;
+        IsectInfo isect;
         Vec3f hitColor = _backgroundColor;
-        float tnear = _infinity;
         Vec2f uv;
         uint32_t index = 0;
-        primitive::Object *hitObject = nullptr;
-        if (trace(orig, dir, tnear, index, uv, &hitObject)) {
-            Vec3f hitPoint = orig + dir * tnear;
+        if (trace(orig, dir, isect)) {
+            Vec3f hitPoint = orig + dir * isect.tNear;
             Vec3f N;
             Vec2f txtCoord;
-            hitObject->getSurfaceProperties(hitPoint, dir, index, uv, N, txtCoord);
-            switch (hitObject->materialType) {
+            isect.hitObject->getSurfaceProperties(hitPoint, dir, index , uv, N, txtCoord);
+            switch (isect.hitObject->materialType) {
                 case primitive::REFLECTION_AND_REFRACTION:
                 {
                     Vec3f reflectionDirection = math::normalize(physics::reflect(dir, N));
-                    Vec3f refractionDirection = math::normalize(physics::refract(dir, N, hitObject->refractionCoefficient));
+                    Vec3f refractionDirection = math::normalize(physics::refract(dir, N, isect.hitObject->refractionCoefficient));
                     Vec3f reflectionRayOrig = (math::dotProduct(reflectionDirection, N) < 0) ?
                         hitPoint - N * _bias :
                         hitPoint + N * _bias;
@@ -66,49 +75,46 @@ namespace raytracer {
                     Vec3f reflectionColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1);
                     Vec3f refractionColor = castRay(refractionRayOrig, refractionDirection, depth + 1);
                     float kr = 0;
-                    physics::fresnel(dir, N, hitObject->refractionCoefficient, kr);
+                    physics::fresnel(dir, N, isect.hitObject->refractionCoefficient, kr);
                     hitColor = reflectionColor * kr + refractionColor * (1 - kr);
                     break;
                 }
                 case primitive::REFLECTION:
                 {
-                    Vec3f reflectionDirection = math::normalize(physics::reflect(dir, N));
-                    Vec3f reflectionRayOrig = (math::dotProduct(reflectionDirection, N) < 0) ?
-                        hitPoint - N * _bias :
-                        hitPoint + N * _bias;
-                    Vec3f reflectionColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1);
                     float kr = 0;
-                    physics::fresnel(dir, N, hitObject->refractionCoefficient, kr);
-                    hitColor = reflectionColor * kr;
+                    physics::fresnel(dir, N, isect.hitObject->refractionCoefficient, kr);
+                    Vec3f reflectionDirection = physics::reflect(dir, N);
+                    Vec3f reflectionRayOrig = (math::dotProduct(reflectionDirection, N) < 0) ?
+                        hitPoint + N * _bias :
+                        hitPoint - N * _bias;
+                    hitColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1);
                     break;
                 }
                 default:
                 {
-                    Vec3f lightAmt = 0;
-                    Vec3f specularColor = 0;
-                    Vec3f shadowPointOrig = (math::dotProduct(dir, N) < 0) ?
-                        hitPoint + N * _bias :
-                        hitPoint - N * _bias;
+                    Vec3f diffuse(0);
+                    Vec3f specular(0);
                     for (uint32_t i = 0; i < lights.size(); ++i) {
-                        Vec3f lightDir = lights[i]->position - hitPoint;
-                        float lightDistance2 = math::dotProduct(lightDir, lightDir);
-                        lightDir = math::normalize(lightDir);
-                        float LdotN = std::max(0.f, math::dotProduct(lightDir, N));
-                        primitive::Object *shadowHitObject = nullptr;
-                        float tNearShadow = _infinity;
-                        bool inShadow = trace(shadowPointOrig, lightDir, tNearShadow, index, uv, &shadowHitObject) &&
-                            tNearShadow * tNearShadow < lightDistance2;
-                        lightAmt += (1 - inShadow) * lights[i]->intensity * LdotN;
-                        Vec3f reflectionDirection = physics::reflect(-lightDir, N);
-                        specularColor += powf(std::max(0.f, -math::dotProduct(reflectionDirection, dir)), hitObject->specularExponent) * lights[i]->intensity;
+                        Vec3f lightDir(0);
+                        Vec3f lightIntensity(0);
+                        IsectInfo isectShad;
+                        float tLight;
+                        lights[i]->illuminate(hitPoint, lightDir, lightIntensity, tLight);
+                        bool vis = !trace(hitPoint + N * _bias, -lightDir, isectShad, physics::SHADOW_RAY);
+                        float cosAngIncidence = math::dotProduct(N, -lightDir);
+                        diffuse += vis  * lightIntensity *
+                            std::max(0.f, cosAngIncidence);
+                        Vec3f R = physics::reflect(lightDir, N);
+                        specular += vis * lightIntensity *
+                            std::pow(std::max(0.f, math::dotProduct(R, -dir)),
+                                    isect.hitObject->specularExponent);
                     }
-                    //hitColor = lightAmt * hitObject->evalDiffuseColor(txtCoord) * hitObject->kd + specularColor * hitObject->ks;
-                    hitColor = hitObject->evalDiffuseColor(txtCoord);
+                    hitColor = (diffuse *
+                        isect.hitObject->evalDiffuseColor(txtCoord) + specular);
                     break;
                 }
             }
         }
-
         return hitColor;
     }
 }

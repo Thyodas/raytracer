@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <chrono>
 
 namespace raytracer {
 
@@ -29,19 +30,23 @@ namespace raytracer {
         float imageAspectRatio = _width / (float)_height;
         Vec3f orig;
         _cameraToWorld.multVecMatrix(Vec3f(0), orig);
-        std::cout << orig << std::endl;
         uint32_t index = 0;
+        auto timeStart = std::chrono::high_resolution_clock::now();
         for (uint32_t j = 0; j < _height; ++j) {
             for (uint32_t i = 0; i < _width; ++i) {
                 float x = (2 * (i + 0.5) / (float)_width - 1) * imageAspectRatio * scale;
                 float y = (1 - 2 * (j + 0.5) / (float)_height) * scale;
                 Vec3f dir;
-                _cameraToWorld.multVecMatrix(Vec3f(x, y, -1), dir);
+                _cameraToWorld.multDirMatrix(Vec3f(x, y, -1), dir);
                 dir = math::normalize(dir);
                 (_framebuffer.get())[index] = _scene.castRay(orig, dir, 0);
                 index++;
             }
+            fprintf(stderr, "\r%3d%c", uint32_t(j / (float)_height * 100), '%');
         }
+        auto timeEnd = std::chrono::high_resolution_clock::now();
+        auto passedTime = std::chrono::duration<double, std::milli>(timeEnd - timeStart).count();
+        fprintf(stderr, "\rDone: %.2f (sec)\n", passedTime / 1000);
 
         std::ofstream ofs;
         ofs.open("./out.ppm");

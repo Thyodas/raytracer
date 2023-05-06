@@ -22,11 +22,11 @@ namespace raytracer {
     class Core {
         public:
             Core(Matrix44f &c2w,
-                 uint32_t width = 640,
-                 uint32_t height = 480,
+                 uint32_t width = 1024,
+                 uint32_t height = 747,
                  float fov = 90,
                  uint8_t maxDepth = 5,
-                 float bias = 0.00001,
+                 float bias = 0.001,
                  Vec3f backgroundColor = Vec3f(0.0, 0.0, 1)) :
                  _scene(maxDepth, bias, backgroundColor),
                  _width(width),
