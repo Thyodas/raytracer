@@ -41,12 +41,14 @@ namespace primitive {
                                               Vec2f &textCoord) const = 0;
             virtual Vec3f evalDiffuseColor(const Vec2f &) const { return diffuseColor; }
 
-            MaterialType materialType;
-            float refractionCoefficient;
-            float kd;
-            float ks;
+            MaterialType materialType = DIFFUSE_AND_GLOSSY;
+            float refractionCoefficient = 1.5;
+            float kd = 1;
+            float ks = 0.2;
+            float ka = 0.2;
             Vec3f diffuseColor;
-            float specularExponent;
+            float specularExponent = 10;
+            Vec3f albedo = 0.18;
             Matrix44f objectToWorld;
             Matrix44f worldtoObject;
     };
