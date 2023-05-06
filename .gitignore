@@ -12,3 +12,4 @@ raytracer
 build
 .vscode
 vgcore*
+build.sh
