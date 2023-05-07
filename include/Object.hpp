@@ -43,7 +43,7 @@ namespace primitive {
 
             MaterialType materialType = DIFFUSE_AND_GLOSSY;
             float refractionCoefficient = 1.5;
-            float kd = 1;
+            float kd = 0.8;
             float ks = 0.2;
             float ka = 0.2;
             Vec3f diffuseColor;
