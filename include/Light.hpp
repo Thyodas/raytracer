@@ -55,7 +55,7 @@ namespace physics {
             }
             void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float distance) const override
             {
-                lightDirection = pos - point;
+                lightDirection = point - pos;
                 float r2 = math::dotProduct(lightDirection, lightDirection);
                 distance = sqrt(r2);
                 lightDirection.x /= distance;
