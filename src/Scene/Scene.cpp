@@ -92,26 +92,44 @@ namespace raytracer {
                 }
                 default:
                 {
-                    Vec3f diffuse(0);
-                    Vec3f specular(0);
-                    for (uint32_t i = 0; i < lights.size(); ++i) {
-                        Vec3f lightDir(0);
-                        Vec3f lightIntensity(0);
-                        IsectInfo isectShad;
-                        float tLight;
-                        lights[i]->illuminate(hitPoint, lightDir, lightIntensity, tLight);
-                        bool vis = !trace(hitPoint + N * _bias, -lightDir, isectShad, physics::SHADOW_RAY);
-                        float cosAngIncidence = math::dotProduct(N, -lightDir);
-                        diffuse += vis  * lightIntensity *
-                            std::max(0.f, cosAngIncidence);
-                        Vec3f R = physics::reflect(lightDir, N);
-                        specular += vis * lightIntensity *
-                            std::pow(std::max(0.f, math::dotProduct(R, -dir)),
-                                    isect.hitObject->specularExponent);
-                    }
-                    hitColor = (diffuse *
-                        isect.hitObject->evalDiffuseColor(txtCoord) + specular);
-                    break;
+                Vec3f directLighting = 0;
+                Vec3f specular = 0;
+                for (uint32_t i = 0; i < lights.size(); ++i) {
+                    Vec3f lightDir, lightIntensity;
+                    IsectInfo isectShad;
+                    lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
+                    bool vis = !trace(hitPoint + N * _bias, -lightDir, isectShad, physics::SHADOW_RAY);
+                    //Compute diffuse component
+                    directLighting += vis * lightIntensity * std::max(0.f, math::dotProduct(N, -lightDir));
+                    //std::cout << std::max(0.f, math::dotProduct(N, -lightDir)) << std::endl;
+                    Vec3f R = physics::reflect(lightDir, N);
+                    //Compute specular component
+                    directLighting += vis * lightIntensity * std::pow(std::max(0.f, math::dotProduct(R, -dir)), isect.hitObject->specularExponent);
+                }
+                Vec3f indirectLigthing = 0;
+#if 1
+                std::default_random_engine generator;
+                std::uniform_real_distribution<float> distribution(0, 1);
+                uint32_t nbSample = 32;
+                Vec3f Nt, Nb;
+                math::createCoordinateSystem(N, Nt, Nb);
+                float pdf = 1 / (2 * M_PI);
+                for (uint32_t n = 0; n < nbSample; ++n) {
+                    float r1 = distribution(generator);
+                    float r2 = distribution(generator);
+                    Vec3f sample = math::uniformSampleHemisphere(r1, r2);
+                    Vec3f sampleWorld(
+                        sample.x * Nb.x + sample.y * N.x + sample.z * Nt.x,
+                        sample.x * Nb.y + sample.y * N.y + sample.z * Nt.y,
+                        sample.x * Nb.z + sample.y * N.z + sample.z * Nt.z);
+                    indirectLigthing += r1 * castRay(hitPoint + sampleWorld * _bias,
+                                                    sampleWorld, depth + 1) / pdf;
+                }
+                indirectLigthing /= (float)nbSample;
+                directLighting /= M_PI;
+#endif
+                hitColor = (directLighting + indirectLigthing) * isect.hitObject->albedo;
+                break;
                 }
             }
         }

@@ -10,6 +10,7 @@
 #include "../../shared/math/Vectors/Vec3.hpp"
 #include "../../shared/math/Vectors/VecUtils.hpp"
 #include "../../shared/math/utils.hpp"
+#include "../../shared/math/MonteCarlo/MonteCarlo.hpp"
 #include "../Physics/LightUtils.hpp"
 #include "Object.hpp"
 #include "Light.hpp"
