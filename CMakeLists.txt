@@ -13,9 +13,11 @@ set(SRCS
     shared/math/analysis/analysis.cpp
     shared/math/Vectors/VecUtils.cpp
     shared/math/utils.cpp
+    shared/math/MonteCarlo/MonteCarlo.cpp
+    shared/math/Matrix/MatrixTransformation.cpp
 )
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -O3 -g")
 
 include_directories(include)
 
