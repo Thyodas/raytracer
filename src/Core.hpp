@@ -25,7 +25,7 @@ namespace raytracer {
                  uint32_t width = 1024,
                  uint32_t height = 747,
                  float fov = 90,
-                 uint8_t maxDepth = 5,
+                 uint8_t maxDepth = 2,
                  float bias = 0.001,
                  Vec3f backgroundColor = Vec3f(0.0, 0.0, 1)) :
                  _scene(maxDepth, bias, backgroundColor),
