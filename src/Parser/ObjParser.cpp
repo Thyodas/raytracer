@@ -41,10 +41,10 @@ namespace Parser {
         }
     }
 
-    std::vector<Matrix44f> computeTransformationMatrixes(std::vector<Vec3f> vertexArray,
+    Matrix44f computeTransformationMatrixes(std::vector<Vec3f> &vertexArray,
                                          Parser::ObjParserData::transformationsOptions &opt)
     {
-        std::vector<Matrix44f> result;
+        Matrix44f result;
         Vec3f center;
         for (size_t i = 0; i < vertexArray.size(); ++i)
             center = center + vertexArray[i];
@@ -55,19 +55,15 @@ namespace Parser {
         Matrix44f rotationYMatrix;
         Matrix44f rotationZMatrix;
         Matrix44f scaleMatrix = math::getScaleMatrix<float>(opt.scaleFactorX, opt.scaleFactorY, opt.scaleFactorZ);
-        result.push_back(scaleMatrix);
         if (opt.rotateZAxis != 0)
             rotationZMatrix = math::getRotationMatrixZ<float>(math::deg2Rad(opt.rotateZAxis));
-        result.push_back(rotationZMatrix);
         if (opt.rotateYAxis != 0)
             rotationYMatrix = math::getRotationMatrixY<float>(math::deg2Rad(opt.rotateYAxis));
-        result.push_back(rotationYMatrix);
         if (opt.rotateXAxis != 0)
             rotationXMatrix = math::getRotationMatrixX<float>(math::deg2Rad(opt.rotateXAxis));
-        result.push_back(rotationXMatrix);
         Vec3f translation = opt.pos - center;
         Matrix44f translationMatrix = math::getTranslationMatrix<float>(translation);
-        result.push_back(translationMatrix);
+        result = scaleMatrix * rotationZMatrix * rotationYMatrix * rotationXMatrix * translationMatrix;
         return result;
     }
 
@@ -81,8 +77,7 @@ namespace Parser {
                 printObjects(test);
             Parser::ObjParserData::Data data = test.getData();
             for (size_t i = 0; i < data.objects.size(); ++i) {
-                std::vector<Matrix44f> matrixes = computeTransformationMatrixes(data.objects[i].vertexArray, opt);
-                Matrix44f objectToWorld = matrixes[0] * matrixes[1] * matrixes[2] * matrixes[3] * matrixes[4];
+                Matrix44f objectToWorld = computeTransformationMatrixes(data.objects[i].vertexArray, opt);
                 primitive::MeshTriangle *mesh =
                     new primitive::MeshTriangle(objectToWorld,
                                                 data.objects[i].faceIndex,
