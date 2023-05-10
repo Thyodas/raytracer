@@ -54,7 +54,7 @@ namespace Parser {
     template<typename T>
     class AParser {
         public:
-            ~AParser();
+            virtual ~AParser();
             AParser() {};
 
             void addCommand(const std::string &name, Command<T> function);
@@ -62,10 +62,10 @@ namespace Parser {
             void parse(const std::string &path);
 
             T &getData();
+            T _accumulator;
         protected:
             std::string _path;
             std::ifstream _file;
-            T _accumulator;
             std::unordered_map<std::string, Command<T>> _commands;
         private:
             void openFile(const std::string &path);
