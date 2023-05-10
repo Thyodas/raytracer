@@ -62,6 +62,7 @@ void randomScene(raytracer::Core &core)
 
 void multipleSphereScene(raytracer::Core &core)
 {
+    core.camera.translate(Vec3f(0, 2, 8));
     float w[5] = {0.04, 0.08, 0.1, 0.2, 0.4};
     //float z[5] = {5, 8, 10, 7, 6};
     float radius = 0.9;
@@ -111,8 +112,10 @@ void oneDiffuseSphereOneRefractionSphere(raytracer::Core &core)
 
 void teapotScene(raytracer::Core &core)
 {
+    core.camera.translate(Vec3f(0, 5, 8));
     Parser::ObjParserData::transformationsOptions opt = {
         .pos = Vec3f(0, 3, 12),
+        //.pos = Vec3f(0, 0, -1),
         .scaleFactorX = 0.05,
         .scaleFactorY = 0.05,
         .scaleFactorZ = 0.05,
@@ -120,14 +123,14 @@ void teapotScene(raytracer::Core &core)
         // .rotateYAxis = -90,
         // .rotateZAxis = -90,
         //.rotateZAxis = 45,
-        .color = Vec3f(0.7, 0, 0),
+        .color = Vec3f(0.2, 0, 0),
     };
     Parser::parseObj(core, opt, "./teapot.obj", false);
     Matrix44f transformSph1;
     math::translate(transformSph1, Vec3f(2, 2, 5));
     primitive::Sphere *sph1 = new primitive::Sphere(transformSph1, 2);
     sph1->materialType = primitive::DIFFUSE_AND_GLOSSY;
-    sph1->albedo = Vec3f(0.6, 0.0, 0.0);
+    sph1->albedo = Vec3f(0.2, 0.0, 0.0);
     core.addObject(std::shared_ptr<primitive::Object>(sph1));
 }
 
@@ -169,8 +172,8 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //              0, 1, 0, 1);
     core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 1)));
     //randomScene(core);
-    //multipleSphereScene(core);
-    teapotScene(core);
+    multipleSphereScene(core);
+    //teapotScene(core);
 
 
     core.render();
