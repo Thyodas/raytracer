@@ -16,7 +16,7 @@ namespace primitive {
     class Sphere : public Object {
         public:
             ~Sphere() = default;
-            Sphere(const Matrix44f &o2w, const Vec3f &center_, const float &radius_);
+            Sphere(const Matrix44f &o2w, const float &radius_);
             bool intersect(
                 const Vec3f &origin,
                 const Vec3f &direction,
@@ -32,6 +32,7 @@ namespace primitive {
                 Vec3f &normal,
                 Vec2f &textCoord)
             const override;
+            Vec3f evalDiffuseColor(const Vec2f &txtCoord) const override;
 
             Vec3f center;
             float radius;

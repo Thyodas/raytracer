@@ -35,19 +35,26 @@ namespace primitive {
             Vec3f dest;
             objectToWorld.multVecMatrix(vertexArray[i], dest);
             _vertices.push_back(dest);
-            std::cout << _vertices[i] << std::endl;
         }
         uint32_t l = 0;
         k = 0;
+        Matrix44f transformNormals = worldtoObject.transpose();
+        std::unique_ptr<uint32_t []> trisIndex = std::unique_ptr<uint32_t []>(new uint32_t [_nbTriangles * 3]);
         for (size_t i = 0; i < faceIndex.size(); ++i) {
             for (uint32_t j = 0; j < faceIndex[i] - 2; ++j) {
-                _vertexIndex.push_back(vertexIndex[k]);
-                _vertexIndex.push_back(vertexIndex[k + j + 1]);
-                _vertexIndex.push_back(vertexIndex[k + j + 2]);
+                trisIndex[l] = vertexIndex[k];
+                trisIndex[l + 1] = vertexIndex[k + j + 1];
+                trisIndex[l + 2] = vertexIndex[k + j + 2];
+                // _vertexIndex.push_back(vertexIndex[k]);
+                // _vertexIndex.push_back(vertexIndex[k + j + 1]);
+                // _vertexIndex.push_back(vertexIndex[k + j + 2]);
                 if (!normals.empty()) {
                     _normalCoords.push_back(normals[k]);
                     _normalCoords.push_back(normals[k + j + 1]);
                     _normalCoords.push_back(normals[k + j + 2]);
+                    transformNormals.multDirMatrix(normals[k], _normalCoords[l]);
+                    transformNormals.multDirMatrix(normals[k + j + 1], _normalCoords[l + 1]);
+                    transformNormals.multDirMatrix(normals[k + j + 2], _normalCoords[l + 2]);
                     _normalCoords[l] = math::normalize(_normalCoords[l]);
                     _normalCoords[l + 1] = math::normalize(_normalCoords[l + 1]);
                     _normalCoords[l + 2] = math::normalize(_normalCoords[l + 2]);
@@ -60,6 +67,9 @@ namespace primitive {
                 l += 3;
             }
             k += faceIndex[i];
+        }
+        for (int i = 0; i < _nbTriangles * 3; ++i) {
+            _vertexIndex.push_back(trisIndex[i]);
         }
         if (!_textCoords.empty())
             return;
@@ -98,7 +108,7 @@ namespace primitive {
         if (v < 0 || u + v > 1)
             return false;
         tnear = math::dotProduct(v1, qvec) * invDet;
-        return true;
+        return (tnear > 0) ? true : false;
     }
 
     bool MeshTriangle::intersect(
@@ -123,7 +133,7 @@ namespace primitive {
                 uv.x = u;
                 uv.y = v;
                 index = i;
-                intersect |= true;
+                intersect = true;
             }
             j += 3;
         }
@@ -143,9 +153,13 @@ namespace primitive {
         const Vec3f &a = _vertices[_vertexIndex[index * 3]];
         const Vec3f &b = _vertices[_vertexIndex[index * 3 + 1]];
         const Vec3f &c = _vertices[_vertexIndex[index * 3 + 2]];
-        Vec3f v0 = b - a;
-        Vec3f v1 = c - a;
-        normal = math::normalize(math::crossProduct(v1, v0));
+        normal = math::crossProduct(b - a, c - a);
+        normal = math::normalize(normal);
+
+        // const Vec3f &n0 = _normalCoords[index * 3];
+        // const Vec3f &n1 = _normalCoords[index * 3 + 1];
+        // const Vec3f &n2 = _normalCoords[index * 3 + 2];
+        // normal = (1 - uv.x - uv.y) * n0 + uv.x * n1 + uv.y * n2;
 
         //Texture coordinates
         if (!_textCoords.empty()) {
@@ -158,8 +172,12 @@ namespace primitive {
 
     Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &textCoord) const
     {
-        float scale = 5;
-        float pattern = (fmodf(textCoord.x * scale, 1) > 0.5) ^ (fmodf(textCoord.y * scale, 1) > 0.5);
-        return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+        if (txtType == DIFFUSE)
+            return albedo;
+        if (txtType == CHECKER) {
+            float scale = 5;
+            float pattern = (fmodf(textCoord.x * scale, 1) > 0.5) ^ (fmodf(textCoord.y * scale, 1) > 0.5);
+            return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+        }
     }
 }

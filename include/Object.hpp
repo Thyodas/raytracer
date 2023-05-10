@@ -18,10 +18,16 @@ namespace primitive {
         REFLECTION
     };
 
+    enum Texture {
+        DIFFUSE,
+        TEXTURE,
+        CHECKER
+    };
+
     class Object {
         public:
             virtual ~Object() = default;
-            Object(const Matrix44f &o2w) : materialType(DIFFUSE_AND_GLOSSY), refractionCoefficient(1.3), kd(0.8), ks(0.2), diffuseColor(0.2), specularExponent(25), objectToWorld(o2w), worldtoObject(o2w.inverse()) {};
+            Object(const Matrix44f &o2w) : materialType(DIFFUSE_AND_GLOSSY), refractionCoefficient(1.3), kd(0.8), ks(0.2), specularExponent(25), objectToWorld(o2w), worldtoObject(o2w.inverse()) {};
             virtual bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &, Vec2f &) const = 0;
             /**
              * Calculates the surface properties of a mesh triangle at a given point.
@@ -39,15 +45,17 @@ namespace primitive {
                                               const Vec2f &uv,
                                               Vec3f &normal,
                                               Vec2f &textCoord) const = 0;
-            virtual Vec3f evalDiffuseColor(const Vec2f &) const { return diffuseColor; }
+            virtual Vec3f evalDiffuseColor(const Vec2f &) const { return albedo; }
 
-            MaterialType materialType;
-            float refractionCoefficient;
-            float kd;
-            float ks;
-            Vec3f diffuseColor;
-            float specularExponent;
+            MaterialType materialType = DIFFUSE_AND_GLOSSY;
+            float refractionCoefficient = 1.5;
+            float kd = 0.8;
+            float ks = 0.2;
+            float ka = 0.2;
+            float specularExponent = 10;
+            Vec3f albedo = 0.18;
             Matrix44f objectToWorld;
             Matrix44f worldtoObject;
+            Texture txtType = DIFFUSE;
     };
 }

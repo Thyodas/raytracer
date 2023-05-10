@@ -14,9 +14,9 @@
 #include <memory>
 
 namespace Parser {
-    inline void printObjects(Parser::ObjParser &parser)
+    inline void printObjects(std::unique_ptr<Parser::ObjParser> &parser)
     {
-        Parser::ObjParserData::Data data = parser.getData();
+        Parser::ObjParserData::Data data = parser->getData();
         for (int i = 0; i < data.objects.size(); ++i) {
             std::cout << "Objet name: " << data.objects[i].name << std::endl;
             std::cout << "Vertex array : " << std::endl;
@@ -41,10 +41,10 @@ namespace Parser {
         }
     }
 
-    std::vector<Matrix44f> computeTransformationMatrixes(std::vector<Vec3f> vertexArray,
+    Matrix44f computeTransformationMatrixes(std::vector<Vec3f> &vertexArray,
                                          Parser::ObjParserData::transformationsOptions &opt)
     {
-        std::vector<Matrix44f> result;
+        Matrix44f result;
         Vec3f center;
         for (size_t i = 0; i < vertexArray.size(); ++i)
             center = center + vertexArray[i];
@@ -55,47 +55,26 @@ namespace Parser {
         Matrix44f rotationYMatrix;
         Matrix44f rotationZMatrix;
         Matrix44f scaleMatrix = math::getScaleMatrix<float>(opt.scaleFactorX, opt.scaleFactorY, opt.scaleFactorZ);
-        result.push_back(scaleMatrix);
         if (opt.rotateZAxis != 0)
             rotationZMatrix = math::getRotationMatrixZ<float>(math::deg2Rad(opt.rotateZAxis));
-        result.push_back(rotationZMatrix);
         if (opt.rotateYAxis != 0)
             rotationYMatrix = math::getRotationMatrixY<float>(math::deg2Rad(opt.rotateYAxis));
-        result.push_back(rotationYMatrix);
         if (opt.rotateXAxis != 0)
             rotationXMatrix = math::getRotationMatrixX<float>(math::deg2Rad(opt.rotateXAxis));
-        result.push_back(rotationXMatrix);
         Vec3f translation = opt.pos - center;
         Matrix44f translationMatrix = math::getTranslationMatrix<float>(translation);
-        result.push_back(translationMatrix);
+        result = scaleMatrix * rotationZMatrix * rotationYMatrix * rotationXMatrix * translationMatrix;
         return result;
     }
 
     int parseObj(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt,
                  const std::string& filePath, bool debug)
     {
-        try {
-            Parser::ObjParser test;
-            test.parse(filePath);
-            if (debug)
-                printObjects(test);
-            Parser::ObjParserData::Data data = test.getData();
-            for (size_t i = 0; i < data.objects.size(); ++i) {
-                std::vector<Matrix44f> matrixes = computeTransformationMatrixes(data.objects[i].vertexArray, opt);
-                Matrix44f objectToWorld = matrixes[0] * matrixes[1] * matrixes[2] * matrixes[3] * matrixes[4];
-                primitive::MeshTriangle *mesh =
-                    new primitive::MeshTriangle(objectToWorld,
-                                                data.objects[i].faceIndex,
-                                                data.objects[i].vertexIndex,
-                                                data.objects[i].vertexArray,
-                                                data.objects[i].normals,
-                                                data.objects[i].st);
-                core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
-            }
-        } catch (std::exception &e) {
-            std::cerr << "raytracer: " << e.what() << "." << std::endl;
-            return {};
-        }
+        std::unique_ptr<Parser::ObjParser> parser(new Parser::ObjParser());
+        parser->parse(filePath);
+        parser->fillCore(core, opt);
+        if (debug)
+            printObjects(parser);
     }
 
     void command_mtllib(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
@@ -182,7 +161,6 @@ namespace Parser {
         data.obj_index++;
         data.tmpNormals.clear();
         data.tmpSt.clear();
-        data.tmpVertices.clear();
     }
     
     void command_usemtl(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
@@ -190,9 +168,30 @@ namespace Parser {
         return;
     }
 
+    void ObjParser::fillCore(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt)
+    {
+        for (size_t i = 0; i < _accumulator.objects.size(); ++i) {
+            Matrix44f objectToWorld = computeTransformationMatrixes(_accumulator.objects[i].vertexArray, opt);
+            primitive::MeshTriangle *mesh =
+                new primitive::MeshTriangle(objectToWorld,
+                                            _accumulator.objects[i].faceIndex,
+                                            _accumulator.objects[i].vertexIndex,
+                                            _accumulator.objects[i].vertexArray,
+                                            _accumulator.objects[i].normals,
+                                            _accumulator.objects[i].st);
+            mesh->kd = 0.8;
+            mesh->ks = 0.2;
+            mesh->refractionCoefficient = 0.8;
+            mesh->specularExponent = 5;
+            mesh->albedo = opt.color;
+            core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
+        }
+    }
+
     ObjParser::ObjParser()
     {
-        _accumulator.objects.push_back({});
+        Parser::ObjParserData::Object obj;
+        _accumulator.objects.push_back(obj);
 
         addCommand("mtllib", &command_mtllib);
         addCommand("v", &command_v);

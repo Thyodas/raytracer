@@ -19,14 +19,6 @@ namespace Parser {
 
     namespace ObjParserData {
 
-        struct VertexInfo {
-            Vec3f vertice;
-            Vec2f st;
-            Vec3f normal;
-
-            VertexInfo() : st(INFINITY), normal(INFINITY) {}
-        };
-
         struct Object {
             std::string name = "Default Object";
             std::vector<Vec3f> vertexArray;
@@ -38,7 +30,6 @@ namespace Parser {
 
         struct Data {
             std::vector<Object> objects;
-            std::vector<Vec3f> tmpVertices;
             std::vector<Vec3f> tmpNormals;
             std::vector<Vec2f> tmpSt;
             std::size_t obj_index = 0;
@@ -52,16 +43,14 @@ namespace Parser {
             float rotateXAxis = 0;
             float rotateYAxis = 0;
             float rotateZAxis = 0;
+            Vec3f color = 0.18;
         };
     }
-
-
-
-
 
     class ObjParser : public AParser<ObjParserData::Data> {
         public:
             ObjParser();
+            void fillCore(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt);
     };
 
 } // Parser

@@ -9,6 +9,8 @@
 
 #include "../../shared/math/Vectors/Vec3.hpp"
 #include "../../shared/math/Vectors/VecUtils.hpp"
+#include "../../shared/math/utils.hpp"
+#include "../../shared/math/MonteCarlo/MonteCarlo.hpp"
 #include "../Physics/LightUtils.hpp"
 #include "Object.hpp"
 #include "Light.hpp"
@@ -19,6 +21,13 @@
 #include <limits>
 
 namespace raytracer {
+        struct IsectInfo
+        {
+            const primitive::Object *hitObject = nullptr;
+            float tNear = std::numeric_limits<float>::max();
+            Vec2f uv;
+            uint32_t index = 0;
+        };
     class Scene {
         public:
             ~Scene() = default;
@@ -54,8 +63,10 @@ namespace raytracer {
                 return _backgroundColor;
             }
         private:
-            bool trace(const Vec3f &orig, const Vec3f &dir,
-                       float &tNear, uint32_t &index, Vec2f &uv, primitive::Object **hitObject);
+            bool trace(
+                const Vec3f &origin, const Vec3f &direction,
+                IsectInfo &isect,
+                physics::RayType rayType = physics::PRIMARY_RAY);
         private:
             uint8_t _maxDepth;
             float _bias;

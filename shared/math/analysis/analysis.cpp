@@ -26,8 +26,7 @@ namespace math {
             x0 = q / a;
             x1 = c / q;
         }
-        if (x0 > x1)
-            std::swap(x0, x1);
+
         return true;
     }
 }
