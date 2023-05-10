@@ -48,10 +48,13 @@ namespace raytracer {
         return lightIntensity * std::max(0.f, cosAngIncidence);
     }
 
+    std::default_random_engine generator;
+    std::uniform_real_distribution<float> distribution(0, 1);
+
     Vec3f Scene::castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth)
     {
         if (depth > _maxDepth)
-            return _backgroundColor;
+            return 0;
         IsectInfo isect;
         Vec3f hitColor = _backgroundColor;
         Vec2f uv;
@@ -87,7 +90,7 @@ namespace raytracer {
                     Vec3f reflectionRayOrig = (math::dotProduct(reflectionDirection, N) < 0) ?
                         hitPoint + N * _bias :
                         hitPoint - N * _bias;
-                    hitColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1);
+                    hitColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1) * kr;
                     break;
                 }
                 default:
@@ -107,10 +110,8 @@ namespace raytracer {
                     directLighting += vis * lightIntensity * std::pow(std::max(0.f, math::dotProduct(R, -dir)), isect.hitObject->specularExponent);
                 }
                 Vec3f indirectLigthing = 0;
-#if 1
-                std::default_random_engine generator;
-                std::uniform_real_distribution<float> distribution(0, 1);
-                uint32_t nbSample = 32;
+#if 0
+                uint32_t nbSample = 8;
                 Vec3f Nt, Nb;
                 math::createCoordinateSystem(N, Nt, Nb);
                 float pdf = 1 / (2 * M_PI);
@@ -128,11 +129,12 @@ namespace raytracer {
                 indirectLigthing /= (float)nbSample;
                 directLighting /= M_PI;
 #endif
-                hitColor = (directLighting + indirectLigthing) * isect.hitObject->albedo;
+                hitColor = (directLighting + indirectLigthing) * isect.hitObject->evalDiffuseColor(txtCoord);
                 break;
                 }
             }
-        }
+        } else
+            hitColor = _backgroundColor;
         return hitColor;
     }
 }
