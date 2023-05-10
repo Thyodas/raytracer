@@ -63,7 +63,7 @@ namespace raytracer {
             Vec3f hitPoint = orig + dir * isect.tNear;
             Vec3f N;
             Vec2f txtCoord;
-            isect.hitObject->getSurfaceProperties(hitPoint, dir, index , uv, N, txtCoord);
+            isect.hitObject->getSurfaceProperties(hitPoint, dir,  isect.index, isect.uv, N, txtCoord);
             switch (isect.hitObject->materialType) {
                 case primitive::REFLECTION_AND_REFRACTION:
                 {
@@ -104,13 +104,12 @@ namespace raytracer {
                     bool vis = !trace(hitPoint + N * _bias, -lightDir, isectShad, physics::SHADOW_RAY);
                     //Compute diffuse component
                     directLighting += vis * lightIntensity * std::max(0.f, math::dotProduct(N, -lightDir));
-                    //std::cout << std::max(0.f, math::dotProduct(N, -lightDir)) << std::endl;
                     Vec3f R = physics::reflect(lightDir, N);
                     //Compute specular component
                     directLighting += vis * lightIntensity * std::pow(std::max(0.f, math::dotProduct(R, -dir)), isect.hitObject->specularExponent);
                 }
                 Vec3f indirectLigthing = 0;
-#if 0
+#if 1
                 uint32_t nbSample = 8;
                 Vec3f Nt, Nb;
                 math::createCoordinateSystem(N, Nt, Nb);
