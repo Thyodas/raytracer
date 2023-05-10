@@ -14,9 +14,9 @@
 #include <memory>
 
 namespace Parser {
-    inline void printObjects(Parser::ObjParser &parser)
+    inline void printObjects(std::unique_ptr<Parser::ObjParser> &parser)
     {
-        Parser::ObjParserData::Data data = parser.getData();
+        Parser::ObjParserData::Data data = parser->getData();
         for (int i = 0; i < data.objects.size(); ++i) {
             std::cout << "Objet name: " << data.objects[i].name << std::endl;
             std::cout << "Vertex array : " << std::endl;
@@ -70,31 +70,11 @@ namespace Parser {
     int parseObj(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt,
                  const std::string& filePath, bool debug)
     {
-        try {
-            Parser::ObjParser test;
-            test.parse(filePath);
-            if (debug)
-                printObjects(test);
-            Parser::ObjParserData::Data data = test.getData();
-            for (size_t i = 0; i < data.objects.size(); ++i) {
-                Matrix44f objectToWorld = computeTransformationMatrixes(data.objects[i].vertexArray, opt);
-                primitive::MeshTriangle *mesh =
-                    new primitive::MeshTriangle(objectToWorld,
-                                                data.objects[i].faceIndex,
-                                                data.objects[i].vertexIndex,
-                                                data.objects[i].vertexArray,
-                                                data.objects[i].normals,
-                                                data.objects[i].st);
-                mesh->kd = 0.8;
-                mesh->ks = 2;
-                mesh->refractionCoefficient = 0.8;
-                mesh->specularExponent = 50;
-                core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
-            }
-        } catch (std::exception &e) {
-            std::cerr << "raytracer: " << e.what() << "." << std::endl;
-            return {};
-        }
+        std::unique_ptr<Parser::ObjParser> parser(new Parser::ObjParser());
+        parser->parse(filePath);
+        parser->fillCore(core, opt);
+        if (debug)
+            printObjects(parser);
     }
 
     void command_mtllib(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
@@ -181,7 +161,6 @@ namespace Parser {
         data.obj_index++;
         data.tmpNormals.clear();
         data.tmpSt.clear();
-        data.tmpVertices.clear();
     }
     
     void command_usemtl(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
@@ -189,9 +168,30 @@ namespace Parser {
         return;
     }
 
+    void ObjParser::fillCore(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt)
+    {
+        for (size_t i = 0; i < _accumulator.objects.size(); ++i) {
+            Matrix44f objectToWorld = computeTransformationMatrixes(_accumulator.objects[i].vertexArray, opt);
+            primitive::MeshTriangle *mesh =
+                new primitive::MeshTriangle(objectToWorld,
+                                            _accumulator.objects[i].faceIndex,
+                                            _accumulator.objects[i].vertexIndex,
+                                            _accumulator.objects[i].vertexArray,
+                                            _accumulator.objects[i].normals,
+                                            _accumulator.objects[i].st);
+            mesh->kd = 0.8;
+            mesh->ks = 0.2;
+            mesh->refractionCoefficient = 0.8;
+            mesh->specularExponent = 5;
+            mesh->albedo = opt.color;
+            core.addObject(std::shared_ptr<primitive::MeshTriangle>(mesh));
+        }
+    }
+
     ObjParser::ObjParser()
     {
-        _accumulator.objects.push_back({});
+        Parser::ObjParserData::Object obj;
+        _accumulator.objects.push_back(obj);
 
         addCommand("mtllib", &command_mtllib);
         addCommand("v", &command_v);
