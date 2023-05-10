@@ -24,10 +24,10 @@ namespace physics {
         public:
             ~Light() = default;
             Light(const Matrix44f &l2w, const Vec3f &c, const float i) : lightToWorld(l2w), color(c), intensity(i) {};
-            virtual void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float distance) const = 0;
+            virtual void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float &distance) const = 0;
+            Matrix44f lightToWorld;
             Vec3f color;
             float intensity;
-            Matrix44f lightToWorld;
     };
 
     class DistantLight : public Light {
@@ -37,7 +37,7 @@ namespace physics {
                 l2w.multDirMatrix(Vec3f(0, 0, -1), dir);
                 dir = math::normalize(dir);
             }
-            void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float distance) const override
+            void illuminate(__attribute__((unused))const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float &distance) const override
             {
                 lightDirection = dir;
                 lightIntensity = color * intensity;
@@ -53,7 +53,7 @@ namespace physics {
             {
                 l2w.multVecMatrix(Vec3f(0), pos);
             }
-            void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float distance) const override
+            void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float &distance) const override
             {
                 lightDirection = point - pos;
                 float r2 = math::dotProduct(lightDirection, lightDirection);

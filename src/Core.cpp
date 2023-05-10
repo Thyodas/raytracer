@@ -26,23 +26,18 @@ namespace raytracer {
 
     void Core::render(void)
     {
-        float scale = tan(math::deg2Rad(_fov * 0.5));
-        float imageAspectRatio = _width / (float)_height;
-        Vec3f orig;
-        _cameraToWorld.multVecMatrix(Vec3f(0), orig);
+        camera.translate(Vec3f(0, 5, 8));
+        camera.rotateAroundOriginY(math::deg2Rad(90));
         uint32_t index = 0;
         auto timeStart = std::chrono::high_resolution_clock::now();
-        for (uint32_t j = 0; j < _height; ++j) {
-            for (uint32_t i = 0; i < _width; ++i) {
-                float x = (2 * (i + 0.5) / (float)_width - 1) * imageAspectRatio * scale;
-                float y = (1 - 2 * (j + 0.5) / (float)_height) * scale;
+        for (uint32_t j = 0; j < camera.height; ++j) {
+            for (uint32_t i = 0; i < camera.width; ++i) {
                 Vec3f dir;
-                _cameraToWorld.multDirMatrix(Vec3f(x, y, -1), dir);
-                dir = math::normalize(dir);
-                (_framebuffer.get())[index] = _scene.castRay(orig, dir, 0);
+                camera.getDir(i, j, dir);
+                (_framebuffer.get())[index] = _scene.castRay(camera.orig, dir, 0);
                 index++;
             }
-            fprintf(stderr, "\r%3d%c", uint32_t(j / (float)_height * 100), '%');
+            fprintf(stderr, "\r%3d%c", uint32_t(j / (float)camera.height * 100), '%');
         }
         auto timeEnd = std::chrono::high_resolution_clock::now();
         auto passedTime = std::chrono::duration<double, std::milli>(timeEnd - timeStart).count();
@@ -50,8 +45,8 @@ namespace raytracer {
 
         std::ofstream ofs;
         ofs.open("./out.ppm");
-        ofs << "P6\n" << _width << " " << _height << "\n255\n";
-        for (uint32_t i = 0; i < _height * _width; ++i) {
+        ofs << "P6\n" << camera.width << " " << camera.height << "\n255\n";
+        for (uint32_t i = 0; i < camera.height * camera.width; ++i) {
             char r = (char)(255 * math::clamp(0, 1, (_framebuffer.get())[i].x));
             char g = (char)(255 * math::clamp(0, 1, (_framebuffer.get())[i].y));
             char b = (char)(255 * math::clamp(0, 1, (_framebuffer.get())[i].z));

@@ -15,6 +15,7 @@
 #include "../shared/math/Matrix/Matrix44.hpp"
 #include "Physics/LightUtils.hpp"
 #include "Scene/Scene.hpp"
+#include "Camera/Camera.hpp"
 
 #include <memory>
 
@@ -28,74 +29,33 @@ namespace raytracer {
                  uint8_t maxDepth = 2,
                  float bias = 0.001,
                  Vec3f backgroundColor = Vec3f(0.5, 0.5, 0.5)) :
-                 _scene(maxDepth, bias, backgroundColor),
-                 _width(width),
-                 _height(height),
-                 _fov(fov),
-                _cameraToWorld(c2w)
+                camera(c2w, width, height, fov),
+                 _scene(maxDepth, bias, backgroundColor)
             {
                 _framebuffer = std::unique_ptr<Vec3f>(new Vec3f[width * height]);
             };
 
-            void setWidth(uint32_t width)
-            {
-                _width = width;
-            }
-            uint32_t getWidth(void) const
-            {
-                return _width;
-            }
-            void setHeight(uint32_t height)
-            {
-                _height = height;
-            }
-            uint32_t getHeight(void) const
-            {
-                return _height;
-            }
-            void setFov(float fov)
-            {
-                _fov = fov;
-            }
-            float getFov(void) const
-            {
-                return _fov;
-            }
-            void setMaxDepth(uint8_t maxDepth)
-            {
-                _scene.setMaxDepth(maxDepth);
-            }
-            uint8_t getMaxDepth(void) const
-            {
-                return _scene.getMaxDepth();
-            }
-            void setBias(float bias)
-            {
-                _scene.setBias(bias);
-            }
-            float getBias(void) const
-            {
-                return _scene.getBias();
-            }
-            void setBackGroundColor(Vec3f &backgroundColor)
-            {
-                _scene.setBackGroundColor(backgroundColor);
-            }
-            Vec3f getBackGroundColor(void) const
-            {
-                return _scene.getBackGroundColor();
-            }
+            void setWidth(uint32_t width) { camera.width = width;}
+            uint32_t getWidth(void) const { return camera.width;}
+            void setHeight(uint32_t height) { camera.height = height;}
+            uint32_t getHeight(void) const { return camera.height;}
+            void setFov(float fov) { camera.fov = fov;}
+            float getFov(void) const { return camera.fov;}
+            void setMaxDepth(uint8_t maxDepth) { _scene.setMaxDepth(maxDepth);}
+            uint8_t getMaxDepth(void) const { return _scene.getMaxDepth();}
+            void setBias(float bias) { _scene.setBias(bias);}
+            float getBias(void) const { return _scene.getBias();}
+            void setBackGroundColor(Vec3f &backgroundColor) { _scene.setBackGroundColor(backgroundColor);}
+            Vec3f getBackGroundColor(void) const { return _scene.getBackGroundColor();}
 
             void render(void);
             void addObject(const std::shared_ptr<primitive::Object> &obj);
             void addLight(const std::shared_ptr<physics::Light> &light);
+
+        public:
+            Camera camera;
         private:
             Scene _scene;
-            Matrix44f _cameraToWorld;
             std::unique_ptr<Vec3f> _framebuffer;
-
-            uint32_t _width;
-            uint32_t _height;
-            float _fov;
     };
 }

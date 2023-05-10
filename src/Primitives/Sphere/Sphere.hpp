@@ -11,6 +11,8 @@
 #include "../../../shared/math/Vectors/Vec3.hpp"
 #include "../../../shared/math/Vectors/Vec2.hpp"
 #include "../../../shared/math/Vectors/VecUtils.hpp"
+#include "../../../shared/math/Matrix/Matrix44.hpp"
+#include "../../../shared/math/Matrix/MatrixTransformation.hpp"
 
 namespace primitive {
     class Sphere : public Object {
@@ -34,6 +36,16 @@ namespace primitive {
             const override;
             Vec3f evalDiffuseColor(const Vec2f &txtCoord) const override;
 
+            void translate(Vec3f translation) override;
+            void rotateAroundX(float angle) override;
+            void rotateAroundY(float angle) override;
+            void rotateAroundZ(float angle) override;
+            void rotateAroundOriginX(float angle) override;
+            void rotateAroundOriginY(float angle) override;
+            void rotateAroundOriginZ(float angle) override;
+            void scale(float x, float y, float z) override;
+
+        public:
             Vec3f center;
             float radius;
             float radius2;

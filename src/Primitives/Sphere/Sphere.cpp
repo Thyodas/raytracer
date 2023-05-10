@@ -19,8 +19,8 @@ namespace primitive {
             const Vec3f &origin,
             const Vec3f &direction,
             float &tnear,
-            uint32_t &index,
-            Vec2f &uv)
+            __attribute__((unused))uint32_t &index,
+            __attribute__((unused))Vec2f &uv)
     const
     {
         Vec3f L = origin - center;
@@ -43,9 +43,9 @@ namespace primitive {
     }
     void Sphere::getSurfaceProperties(
             const Vec3f &point,
-            const Vec3f &incident,
-            const uint32_t &index,
-            const Vec2f &uv,
+            __attribute__((unused))const Vec3f &incident,
+            __attribute__((unused))const uint32_t &index,
+            __attribute__((unused))const Vec2f &uv,
             Vec3f &normal,
             Vec2f &textCoord)
     const
@@ -65,5 +65,54 @@ namespace primitive {
             float pattern = (fmodf(txtCoord.x * scale, 1) > 0.5) ^ (fmodf(txtCoord.y * scale, 1) > 0.5);
             return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
         }
+        return Vec3f(0);
+    }
+
+    void Sphere::translate(Vec3f translation)
+    {
+        math::translate(objectToWorld, translation);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::rotateAroundX(float angle)
+    {
+        math::rotateX(objectToWorld, angle);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::rotateAroundY(float angle)
+    {
+        math::rotateY(objectToWorld, angle);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::rotateAroundZ(float angle)
+    {
+        math::rotateZ(objectToWorld, angle);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::rotateAroundOriginX(float angle)
+    {
+        math::rotateAroundOriginX(objectToWorld, angle);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::rotateAroundOriginY(float angle)
+    {
+        math::rotateAroundOriginY(objectToWorld, angle);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::rotateAroundOriginZ(float angle)
+    {
+        math::rotateAroundOriginZ(objectToWorld, angle);
+        objectToWorld.multVecMatrix(center, center);
+    }
+
+    void Sphere::scale(float x, float y, float z)
+    {
+        math::scale(objectToWorld, x, y , z);
+        objectToWorld.multVecMatrix(center, center);
     }
 }

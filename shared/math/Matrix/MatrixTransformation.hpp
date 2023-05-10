@@ -12,7 +12,11 @@
 
 namespace math {
     void translate(Matrix44f &transformationMatrix, Vec3f translation);
-    void rotateAroundXAxis(Matrix44f &transformationMatrix, float angle);
-    void rotateAroundYAxis(Matrix44f &transformationMatrix, float angle);
-    void rotateAroundZAxis(Matrix44f &transformationMatrix, float angle);
+    void rotateAroundOriginX(Matrix44f &transformationMatrix, float angle);
+    void rotateAroundOriginY(Matrix44f &transformationMatrix, float angle);
+    void rotateAroundOriginZ(Matrix44f &transformationMatrix, float angle);
+    void rotateX(Matrix44f &transformationMatrix, float angle);
+    void rotateY(Matrix44f &transformationMatrix, float angle);
+    void rotateZ(Matrix44f &transformationMatrix, float angle);
+    void scale(Matrix44f &transformationMatrix, float x = 1, float y = 1, float z = 1);
 }
