@@ -172,9 +172,12 @@ namespace primitive {
 
     Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &textCoord) const
     {
-        return Vec3f(0.58, 0.22, 0.8);
-        float scale = 5;
-        float pattern = (fmodf(textCoord.x * scale, 1) > 0.5) ^ (fmodf(textCoord.y * scale, 1) > 0.5);
-        return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+        if (txtType == DIFFUSE)
+            return albedo;
+        if (txtType == CHECKER) {
+            float scale = 5;
+            float pattern = (fmodf(textCoord.x * scale, 1) > 0.5) ^ (fmodf(textCoord.y * scale, 1) > 0.5);
+            return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+        }
     }
 }

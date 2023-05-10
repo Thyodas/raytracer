@@ -32,6 +32,7 @@ namespace primitive {
                 Vec3f &normal,
                 Vec2f &textCoord)
             const override;
+            Vec3f evalDiffuseColor(const Vec2f &txtCoord) const override;
 
             Vec3f center;
             float radius;

@@ -55,4 +55,15 @@ namespace primitive {
         textCoord.x = (1 + atan2(normal.z, normal.x) / M_PI) * 0.5;
         textCoord.y = acosf(normal.y) / M_PI;
     }
+
+    Vec3f Sphere::evalDiffuseColor(const Vec2f &txtCoord) const
+    {
+        if (txtType == DIFFUSE)
+            return albedo;
+        if (txtType == CHECKER) {
+            float scale = 5;
+            float pattern = (fmodf(txtCoord.x * scale, 1) > 0.5) ^ (fmodf(txtCoord.y * scale, 1) > 0.5);
+            return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+        }
+    }
 }
