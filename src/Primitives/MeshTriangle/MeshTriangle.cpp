@@ -6,6 +6,8 @@
 */
 
 #include "MeshTriangle.hpp"
+#include "../shared/math/Matrix/MatrixTransformation.hpp"
+
 #include <cstring>
 #include <algorithm>
 #include <limits>
@@ -25,7 +27,7 @@ namespace primitive {
         uint32_t maxVertexIndex = 0;
         for (size_t i = 0; i < faceIndex.size(); ++i) {
             _nbTriangles += faceIndex[i] - 2;
-            for (uint32_t j = 0; j < faceIndex[i]; ++j)
+            for (int j = 0; j < faceIndex[i]; ++j)
                 if (vertexIndex[k + j] > maxVertexIndex)
                     maxVertexIndex = vertexIndex[k + j];
             k += faceIndex[i];
@@ -41,7 +43,7 @@ namespace primitive {
         Matrix44f transformNormals = worldtoObject.transpose();
         std::unique_ptr<uint32_t []> trisIndex = std::unique_ptr<uint32_t []>(new uint32_t [_nbTriangles * 3]);
         for (size_t i = 0; i < faceIndex.size(); ++i) {
-            for (uint32_t j = 0; j < faceIndex[i] - 2; ++j) {
+            for (int j = 0; j < faceIndex[i] - 2; ++j) {
                 trisIndex[l] = vertexIndex[k];
                 trisIndex[l + 1] = vertexIndex[k + j + 1];
                 trisIndex[l + 2] = vertexIndex[k + j + 2];
@@ -68,7 +70,7 @@ namespace primitive {
             }
             k += faceIndex[i];
         }
-        for (int i = 0; i < _nbTriangles * 3; ++i) {
+        for (uint32_t i = 0; i < _nbTriangles * 3; ++i) {
             _vertexIndex.push_back(trisIndex[i]);
         }
         if (!_textCoords.empty())
@@ -141,8 +143,8 @@ namespace primitive {
         return intersect;
     }
     void MeshTriangle::getSurfaceProperties(
-                const Vec3f &point,
-                const Vec3f &incident,
+                __attribute__((unused))const Vec3f &point,
+                __attribute__((unused))const Vec3f &incident,
                 const uint32_t &index,
                 const Vec2f &uv,
                 Vec3f &normal,
@@ -178,6 +180,111 @@ namespace primitive {
             float scale = 5;
             float pattern = (fmodf(textCoord.x * scale, 1) > 0.5) ^ (fmodf(textCoord.y * scale, 1) > 0.5);
             return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+        }
+        return Vec3f(0);
+    }
+
+    void MeshTriangle::translate(Vec3f translation)
+    {
+        math::translate(objectToWorld, translation);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::rotateAroundX(float angle)
+    {
+        math::rotateX(objectToWorld, angle);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::rotateAroundY(float angle)
+    {
+        math::rotateY(objectToWorld, angle);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::rotateAroundZ(float angle)
+    {
+        math::rotateZ(objectToWorld, angle);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::rotateAroundOriginX(float angle)
+    {
+        math::rotateAroundOriginX(objectToWorld, angle);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::rotateAroundOriginY(float angle)
+    {
+        math::rotateAroundOriginY(objectToWorld, angle);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::rotateAroundOriginZ(float angle)
+    {
+        math::rotateAroundOriginZ(objectToWorld, angle);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
+        }
+    }
+
+    void MeshTriangle::scale(float x, float y, float z)
+    {
+        math::scale(objectToWorld, x, y, z);
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            objectToWorld.multVecMatrix(_vertices[i], _vertices[i]);
+        if (!_normalCoords.empty()) {
+            worldtoObject = objectToWorld.inverse();
+            Matrix44f transformNormals = worldtoObject.transpose();
+            for (size_t i = 0; i < _normalCoords.size(); ++i)
+                transformNormals.multDirMatrix(_normalCoords[i], _normalCoords[i]);
         }
     }
 }

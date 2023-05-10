@@ -10,6 +10,7 @@
 #include "../shared/math/Vectors/Vec3.hpp"
 #include "../shared/math/Vectors/Vec2.hpp"
 #include "../shared/math/Matrix/Matrix44.hpp"
+#include "Transformable.hpp"
 
 namespace primitive {
     enum MaterialType {
@@ -24,7 +25,7 @@ namespace primitive {
         CHECKER
     };
 
-    class Object {
+    class Object : public math::Transformable {
         public:
             virtual ~Object() = default;
             Object(const Matrix44f &o2w) : materialType(DIFFUSE_AND_GLOSSY), refractionCoefficient(1.3), kd(0.8), ks(0.2), specularExponent(25), objectToWorld(o2w), worldtoObject(o2w.inverse()) {};

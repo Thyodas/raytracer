@@ -63,7 +63,7 @@ void randomScene(raytracer::Core &core)
 void multipleSphereScene(raytracer::Core &core)
 {
     float w[5] = {0.04, 0.08, 0.1, 0.2, 0.4};
-    float z[5] = {5, 8, 10, 7, 6};
+    //float z[5] = {5, 8, 10, 7, 6};
     float radius = 0.9;
     Vec3f c[5] = {Vec3f(0.2, 0, 0), Vec3f(0, 0.2, 0),Vec3f(0,0,0.2), Vec3f(0.2,0.2,0), Vec3f(0.2, 0.2,0.2)};
     for (int i = -4, n = 2, k = 0; i <= 4; i+= 2, n *= 2, k++) {
@@ -131,7 +131,7 @@ void teapotScene(raytracer::Core &core)
     core.addObject(std::shared_ptr<primitive::Object>(sph1));
 }
 
-int main(int argc, char **argv)
+int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
 {
     //Setup Core
     // Matrix44f cameraToWorld = Matrix44f(1, 0, 0, 0,
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
     //                                     0, 0, 1, 0,
     //                                     0, 3, 12, 1);
     Matrix44f cameraToWorld;
-    //math::rotateAroundXAxis(cameraToWorld, math::deg2Rad(45));
-    math::translate(cameraToWorld, Vec3f(0, 5, 8));
+    // math::rotateAroundOriginY(cameraToWorld, math::deg2Rad(45));
+    // math::translate(cameraToWorld, Vec3f(0, 5, 8));
     raytracer::Core core(cameraToWorld);
     core.setFov(90);
 
@@ -161,8 +161,8 @@ int main(int argc, char **argv)
     //Setup lights
     Matrix44f l2w;
     math::translate(l2w, Vec3f(0, 1, 0));
-    math::rotateAroundYAxis(l2w, math::deg2Rad(45));
-    math::rotateAroundZAxis(l2w, math::deg2Rad(45));
+    math::rotateAroundOriginY(l2w, math::deg2Rad(45));
+    math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
     // Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0,
     //              -1.902827, -3.543982, -11.895445, 0,
     //              5.459804, 10.568624, -4.02205, 0,

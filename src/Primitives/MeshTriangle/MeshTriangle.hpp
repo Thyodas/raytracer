@@ -47,6 +47,15 @@ namespace primitive {
 
             Vec3f evalDiffuseColor(const Vec2f &textCoord) const override;
 
+            void translate(Vec3f translation) override;
+            void rotateAroundX(float angle) override;
+            void rotateAroundY(float angle) override;
+            void rotateAroundZ(float angle) override;
+            void rotateAroundOriginX(float angle) override;
+            void rotateAroundOriginY(float angle) override;
+            void rotateAroundOriginZ(float angle) override;
+            void scale(float x, float y, float z) override;
+
             std::vector<Vec3f> _vertices;
             uint32_t _nbTriangles = 0;
             std::vector<uint32_t> _vertexIndex;

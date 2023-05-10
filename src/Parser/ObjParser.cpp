@@ -17,26 +17,26 @@ namespace Parser {
     inline void printObjects(std::unique_ptr<Parser::ObjParser> &parser)
     {
         Parser::ObjParserData::Data data = parser->getData();
-        for (int i = 0; i < data.objects.size(); ++i) {
+        for (size_t i = 0; i < data.objects.size(); ++i) {
             std::cout << "Objet name: " << data.objects[i].name << std::endl;
             std::cout << "Vertex array : " << std::endl;
-            for (int j = 0; j < data.objects[i].vertexArray.size(); ++j)
+            for (size_t j = 0; j < data.objects[i].vertexArray.size(); ++j)
                 std::cout << data.objects[i].vertexArray[j] << std::endl;
             std::cout << std::endl;
             std::cout << "Face index array:" << std::endl;
-            for (int j = 0; j < data.objects[i].faceIndex.size(); ++j)
+            for (size_t j = 0; j < data.objects[i].faceIndex.size(); ++j)
                 std::cout << data.objects[i].faceIndex[j] << std::endl;
             std::cout << std::endl;
             std::cout << "Vertex index array" << std::endl;
-            for (int j = 0; j < data.objects[i].vertexIndex.size(); ++j)
+            for (size_t j = 0; j < data.objects[i].vertexIndex.size(); ++j)
                 std::cout << data.objects[i].vertexIndex[j] << std::endl;
             std::cout << std::endl;
             std::cout << "Normals array" << std::endl;
-            for (int j = 0; j < data.objects[i].normals.size(); ++j)
+            for (size_t j = 0; j < data.objects[i].normals.size(); ++j)
                 std::cout << data.objects[i].normals[j] << std::endl;
             std::cout << std::endl;
             std::cout << "St array" << std::endl;
-            for (int j = 0; j < data.objects[i].st.size(); ++j)
+            for (size_t j = 0; j < data.objects[i].st.size(); ++j)
                 std::cout << data.objects[i].st[j] << std::endl;
         }
     }
@@ -75,9 +75,10 @@ namespace Parser {
         parser->fillCore(core, opt);
         if (debug)
             printObjects(parser);
+        return 0;
     }
 
-    void command_mtllib(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    void command_mtllib(__attribute__((unused))Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
     {
         if (argv.size() != 2)
             throw Parser::ParseFailureException("invalid number of arguments");
@@ -88,7 +89,7 @@ namespace Parser {
         if (argv.size() < 4)
             throw Parser::ParseFailureException("invalid number of arguments");
 
-        for (int i = 1; i < argv.size(); ++i) {
+        for (size_t i = 1; i < argv.size(); ++i) {
             std::vector<std::string> indices;
             std::stringstream ss(argv[i]);
             std::string index;
@@ -138,12 +139,12 @@ namespace Parser {
         data.objects[data.obj_index].vertexArray.push_back(vertice);
     }
 
-    void command_s(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    void command_s(__attribute__((unused))Parser::ObjParserData::Data &data, __attribute__((unused))std::vector<std::string> &argv)
     {
         return;
     }
 
-    void command_g(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    void command_g(__attribute__((unused))Parser::ObjParserData::Data &data, __attribute__((unused))std::vector<std::string> &argv)
     {
         return;
     }
@@ -163,7 +164,7 @@ namespace Parser {
         data.tmpSt.clear();
     }
     
-    void command_usemtl(Parser::ObjParserData::Data &data, std::vector<std::string> &argv)
+    void command_usemtl(__attribute__((unused))Parser::ObjParserData::Data &data, __attribute__((unused))std::vector<std::string> &argv)
     {
         return;
     }
