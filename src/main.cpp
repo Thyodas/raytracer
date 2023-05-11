@@ -137,16 +137,16 @@ void teapotScene(raytracer::Core &core)
     core.addObject(std::shared_ptr<primitive::Object>(sph1));
 }
 
-void convertFrameBuffer(std::shared_ptr<Vec3f> frameBuffer, sf::Image &image)
+void convertFrameBuffer(int width, int height, std::shared_ptr<Vec3f> frameBuffer, sf::Image &image)
 {
     int i = 0;
-    for (int line = 0; line < 600; ++line) {
-        for (int col = 0; col < 800; ++col) {
-            int r = (255 * math::clamp(0, 1, (frameBuffer.get())[i].x));
-            int g = (255 * math::clamp(0, 1, (frameBuffer.get())[i].y));
-            int b = (255 * math::clamp(0, 1, (frameBuffer.get())[i].z));
-            sf::Color color = {r, g, b, 255};
-            image.setPixel(line, col, color);
+    for (int line = 0; line < height; ++line) {
+        for (int col = 0; col < width; ++col) {
+            sf::Uint8 r = (sf::Uint8)(255 * math::clamp(0, 1, (frameBuffer.get())[i].x));
+            sf::Uint8 g = (sf::Uint8)(255 * math::clamp(0, 1, (frameBuffer.get())[i].y));
+            sf::Uint8 b = (sf::Uint8)(255 * math::clamp(0, 1, (frameBuffer.get())[i].z));
+            image.setPixel(col, line, {r, g, b, 255});
+            ++i;
         }
     }
 }
@@ -202,14 +202,14 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
 
     std::thread render ([&core] () {core.render();});
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+    sf::RenderWindow window(sf::VideoMode((int)core.camera.width, (int)core.camera.height), "Raytracer");
     sf::Image image;
     image.create(800, 600, sf::Color::Black);
     sf::Texture texture;
     sf::Sprite sprite;
     while (window.isOpen()) {
         sf::Event event;
-        convertFrameBuffer(core.getFrameBuffer(), image);
+        convertFrameBuffer((int)core.camera.width, (int)core.camera.height, core.getFrameBuffer(), image);
         texture.loadFromImage(image);
         sprite.setTexture(texture);
         while (window.pollEvent(event)) {

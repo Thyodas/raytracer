@@ -29,4 +29,7 @@ endif()
 
 include_directories(include)
 
+
 add_executable(raytracer ${SRCS} ${HEADERS})
+
+target_link_libraries(raytracer sfml-window sfml-graphics sfml-system)
