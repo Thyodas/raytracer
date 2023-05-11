@@ -9,6 +9,7 @@
 #include "Light.hpp"
 #include "Primitives/Sphere/Sphere.hpp"
 #include "Primitives/MeshTriangle/MeshTriangle.hpp"
+#include "Primitives/Plane/Plane.hpp"
 #include "Core.hpp"
 #include "../shared/math/Vectors/Vec3.hpp"
 #include "../shared/math/Vectors/Vec2.hpp"
@@ -134,6 +135,14 @@ void teapotScene(raytracer::Core &core)
     core.addObject(std::shared_ptr<primitive::Object>(sph1));
 }
 
+void plane_scene(raytracer::Core &core)
+{
+    Matrix44f o2w;
+    primitive::Plane *plane = new primitive::Plane(o2w, Vec3f(0, 0, -1), Vec3f(0, 0, 1), Vec3f(0, -1, 0), Vec3f(0, 0, -1));
+    plane->albedo = Vec3f(0.6, 0, 0);
+    core.addObject(std::shared_ptr<primitive::Object>(plane));
+}
+
 int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
 {
     //Setup Core
@@ -159,21 +168,22 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
             // .rotateZAxis = -90,
             // .rotateZAxis = 45,
     };
-    Parser::parseObj(core, opt, "./plane.obj", true);
+    //Parser::parseObj(core, opt, "./plane.obj", true);
 
     //Setup lights
     Matrix44f l2w;
-    math::translate(l2w, Vec3f(0, 1, 0));
-    math::rotateAroundOriginY(l2w, math::deg2Rad(45));
-    math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
+    //math::translate(l2w, Vec3f(0, -5, -3));
+    //math::rotateAroundOriginY(l2w, math::deg2Rad(45));
+    //math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
     // Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0,
     //              -1.902827, -3.543982, -11.895445, 0,
     //              5.459804, 10.568624, -4.02205, 0,
     //              0, 1, 0, 1);
-    core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 1)));
+    core.addLight(std::shared_ptr<physics::Light>(new physics::PointLight(l2w, Vec3f(0.5, 0, 0), 1)));
     //randomScene(core);
-    multipleSphereScene(core);
+    //multipleSphereScene(core);
     //teapotScene(core);
+    plane_scene(core);
 
 
     core.render();
