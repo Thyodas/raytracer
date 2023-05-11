@@ -18,8 +18,10 @@
 #include "Parser.hpp"
 #include "Parser/ObjParser.hpp"
 
+#include <thread>
 #include <vector>
 #include <memory>
+#include <SFML/Graphics.hpp>
 
 inline float randomFloat()
 {
@@ -135,6 +137,20 @@ void teapotScene(raytracer::Core &core)
     core.addObject(std::shared_ptr<primitive::Object>(sph1));
 }
 
+void convertFrameBuffer(std::shared_ptr<Vec3f> frameBuffer, sf::Image &image)
+{
+    int i = 0;
+    for (int line = 0; line < 600; ++line) {
+        for (int col = 0; col < 800; ++col) {
+            int r = (255 * math::clamp(0, 1, (frameBuffer.get())[i].x));
+            int g = (255 * math::clamp(0, 1, (frameBuffer.get())[i].y));
+            int b = (255 * math::clamp(0, 1, (frameBuffer.get())[i].z));
+            sf::Color color = {r, g, b, 255};
+            image.setPixel(line, col, color);
+        }
+    }
+}
+
 void plane_scene(raytracer::Core &core)
 {
     Matrix44f o2w;
@@ -181,11 +197,38 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //              0, 1, 0, 1);
     core.addLight(std::shared_ptr<physics::Light>(new physics::PointLight(l2w, Vec3f(0.5, 0, 0), 1)));
     //randomScene(core);
-    //multipleSphereScene(core);
-    //teapotScene(core);
-    plane_scene(core);
+    multipleSphereScene(core);
+    // teapotScene(core);
 
+    std::thread render ([&core] () {core.render();});
 
-    core.render();
+    sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+    sf::Image image;
+    image.create(800, 600, sf::Color::Black);
+    sf::Texture texture;
+    sf::Sprite sprite;
+    while (window.isOpen()) {
+        sf::Event event;
+        convertFrameBuffer(core.getFrameBuffer(), image);
+        texture.loadFromImage(image);
+        sprite.setTexture(texture);
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+                std::cout << "UP" << std::endl;
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+                std::cout << "RIGHT" << std::endl;
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+                std::cout << "DOWN" << std::endl;
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+                std::cout << "LEFT" << std::endl;
+        }
+        window.clear(sf::Color::Black);
+        window.draw(sprite);
+        window.display();
+    }
+    render.join();
+    // core.render();
     return 0;
 }

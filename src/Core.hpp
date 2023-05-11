@@ -47,6 +47,10 @@ namespace raytracer {
             float getBias(void) const { return _scene.getBias();}
             void setBackGroundColor(Vec3f &backgroundColor) { _scene.setBackGroundColor(backgroundColor);}
             Vec3f getBackGroundColor(void) const { return _scene.getBackGroundColor();}
+            std::shared_ptr<Vec3f> getFrameBuffer(void) const
+            {
+                return _framebuffer;
+            }
 
             void render(void);
             void addObject(const std::shared_ptr<primitive::Object> &obj);

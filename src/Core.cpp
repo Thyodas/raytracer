@@ -41,7 +41,6 @@ namespace raytracer {
         auto timeEnd = std::chrono::high_resolution_clock::now();
         auto passedTime = std::chrono::duration<double, std::milli>(timeEnd - timeStart).count();
         fprintf(stderr, "\rDone: %.2f (sec)\n", passedTime / 1000);
-
         std::ofstream ofs;
         ofs.open("./out.ppm");
         ofs << "P6\n" << camera.width << " " << camera.height << "\n255\n";
@@ -51,7 +50,6 @@ namespace raytracer {
             char b = (char)(255 * math::clamp(0, 1, (_framebuffer.get())[i].z));
             ofs << r << g << b;
         }
-
         ofs.close();
     }
 }
