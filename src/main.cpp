@@ -204,7 +204,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
 
     sf::RenderWindow window(sf::VideoMode((int)core.camera.width, (int)core.camera.height), "Raytracer");
     sf::Image image;
-    image.create(800, 600, sf::Color::Black);
+    image.create((int)core.camera.width, (int)core.camera.height, sf::Color::Black);
     sf::Texture texture;
     sf::Sprite sprite;
     while (window.isOpen()) {
