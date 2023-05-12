@@ -20,6 +20,7 @@
 #include "Parser/Config/CfgParser.hpp"
 
 #include <thread>
+#include <pthread.h>
 #include <vector>
 #include <memory>
 #include <SFML/Graphics.hpp>
