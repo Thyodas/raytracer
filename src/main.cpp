@@ -8,6 +8,7 @@
 #include "Object.hpp"
 #include "Light.hpp"
 #include "Primitives/Sphere/Sphere.hpp"
+#include "Primitives/Cone/Cone.hpp"
 #include "Primitives/MeshTriangle/MeshTriangle.hpp"
 #include "Primitives/Plane/Plane.hpp"
 #include "Core.hpp"
@@ -65,6 +66,26 @@ void randomScene(raytracer::Core &core)
     }
 }
 
+void coneTestScene(raytracer::Core &core)
+{
+    // core.camera.translate(Vec3f(0, 2, 8));
+    float w = 0.08;
+    float radius = 0.9;
+    float height = 1.2;
+    Vec3f c = Vec3f(0.2, 0, 0);
+    Matrix44f xformCone;
+    xformCone[3][0] = 0;
+    xformCone[3][1] = 2;
+    xformCone[3][2] = 500;
+    // math::rotateX(xformCone, math::deg2Rad(90));
+    primitive::Cone *cone = new primitive::Cone(xformCone, radius, height, math::deg2Rad(-20), Vec3f{0, 1, 0});
+    cone->albedo = Vec3f(0.6, 0, 0);
+    // cone->specularExponent = 4;
+    // cone->ks = w;
+    // cone->albedo = c;
+    core.addObject(std::shared_ptr<primitive::Object>(cone));
+}
+
 void multipleSphereScene(raytracer::Core &core)
 {
     core.camera.translate(Vec3f(0, 2, 8));
@@ -91,7 +112,7 @@ void multipleSphereScene(raytracer::Core &core)
         sph->specularExponent = n;
         sph->ks = w[k];
         sph->albedo = c[k];
-        core.addObject(std::shared_ptr<primitive::Object>(sph));
+        // core.addObject(std::shared_ptr<primitive::Object>(sph));
         radius = 0.9;
     }
 }
@@ -205,7 +226,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
             // .rotateZAxis = -90,
             // .rotateZAxis = 45,
     };
-    Parser::parseObj(core, opt, "./plane.obj", true);
+    //Parser::parseObj(core, opt, "./plane.obj", true);
 
     //Setup lights
     //Matrix44f l2w;
@@ -216,9 +237,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //              -1.902827, -3.543982, -11.895445, 0,
     //              5.459804, 10.568624, -4.02205, 0,
     //              0, 1, 0, 1);
-    //core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 5)));
-    //randomScene(core);
-    //multipleSphereScene(core);
+    coneTestScene(core);
     // teapotScene(core);
 
     std::thread render ([&core] () {core.render();});

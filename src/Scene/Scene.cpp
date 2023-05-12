@@ -109,8 +109,8 @@ namespace raytracer {
                     directLighting += vis * lightIntensity * std::pow(std::max(0.f, math::dotProduct(R, -dir)), isect.hitObject->specularExponent);
                 }
                 Vec3f indirectLigthing = 0;
-#if 0
-                uint32_t nbSample = 8;
+#if 1
+                uint32_t nbSample = 0;
                 Vec3f Nt, Nb;
                 math::createCoordinateSystem(N, Nt, Nb);
                 float pdf = 1 / (2 * M_PI);
@@ -129,6 +129,7 @@ namespace raytracer {
                 directLighting /= M_PI;
 #endif
                 hitColor = (directLighting + indirectLigthing) * isect.hitObject->evalDiffuseColor(txtCoord);
+                hitColor = isect.hitObject->evalDiffuseColor(txtCoord);
                 break;
                 }
             }

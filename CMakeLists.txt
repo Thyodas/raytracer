@@ -13,6 +13,7 @@ set(SRCS
     src/Primitives/Plane/Plane.cpp
     src/Parser/Object/ObjParser.cpp
     src/Parser/Config/CfgParser.cpp
+    src/Primitives/Cone/Cone.cpp
     shared/math/analysis/analysis.cpp
     shared/math/Vectors/VecUtils.cpp
     shared/math/utils.cpp
