@@ -19,6 +19,7 @@
 #include "Parser/ObjParser.hpp"
 
 #include <thread>
+#include <pthread.h>
 #include <vector>
 #include <memory>
 #include <SFML/Graphics.hpp>
@@ -201,7 +202,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     // teapotScene(core);
 
     std::thread render ([&core] () {core.render();});
-
+    // pthread_create(&render, NULL, core.render(), NULL);
     sf::RenderWindow window(sf::VideoMode((int)core.camera.width, (int)core.camera.height), "Raytracer");
     sf::Image image;
     image.create((int)core.camera.width, (int)core.camera.height, sf::Color::Black);
@@ -213,22 +214,33 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
         texture.loadFromImage(image);
         sprite.setTexture(texture);
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed) {
+                core.stopRender();
                 window.close();
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-                std::cout << "UP" << std::endl;
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-                std::cout << "RIGHT" << std::endl;
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-                std::cout << "DOWN" << std::endl;
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-                std::cout << "LEFT" << std::endl;
+            }
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
+                core.camera.rotateAroundOriginX(45);
+                core.requestRerender();
+            }
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+                core.camera.rotateAroundOriginZ(-45);
+                core.requestRerender();
+            }
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
+                core.camera.rotateAroundOriginX(-45);
+                core.requestRerender();
+            }
+            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+                core.camera.rotateAroundOriginZ(45);
+                core.requestRerender();
+            }
         }
         window.clear(sf::Color::Black);
         window.draw(sprite);
         window.display();
     }
-    render.join();
-    // core.render();
+    render.join(); // block until Done: 100%
+    pthread_t pthread_id = render.native_handle();
+    pthread_cancel(pthread_id);
     return 0;
 }

@@ -18,19 +18,22 @@
 #include "Camera/Camera.hpp"
 
 #include <memory>
+#include <semaphore>
 
 namespace raytracer {
     class Core {
         public:
             Core(Matrix44f &c2w,
-                 uint32_t width = 600,
-                 uint32_t height = 400,
-                 float fov = 90,
-                 uint8_t maxDepth = 2,
-                 float bias = 0.001,
-                 Vec3f backgroundColor = Vec3f(0.5, 0.5, 0.5)) :
+                uint32_t width = 600,
+                uint32_t height = 400,
+                float fov = 90,
+                uint8_t maxDepth = 2,
+                float bias = 0.001,
+                Vec3f backgroundColor = Vec3f(0.5, 0.5, 0.5)) :
                 camera(c2w, width, height, fov),
-                 _scene(maxDepth, bias, backgroundColor)
+                _scene(maxDepth, bias, backgroundColor),
+                _rerenderSemaphore(0),
+                _stopRender(0)
             {
                 _framebuffer = std::unique_ptr<Vec3f>(new Vec3f[width * height]);
             };
@@ -49,6 +52,26 @@ namespace raytracer {
             Vec3f getBackGroundColor(void) const { return _scene.getBackGroundColor();}
             std::shared_ptr<Vec3f> getFrameBuffer(void) const { return _framebuffer;}
 
+            void requestRerender(void) {
+                _rerenderSemaphore.release();
+            }
+
+            bool waitRerender(void) {
+                _rerenderSemaphore.acquire();
+                return true;
+            }
+
+            bool checkRerender(void) {
+                return _rerenderSemaphore.try_acquire();
+            }
+
+            void stopRender(void) {
+                _stopRender.release(); //+1
+            }
+            bool checkStopRender(void) {
+                return _stopRender.try_acquire();
+            }
+
             void render(void);
             void addObject(const std::shared_ptr<primitive::Object> &obj);
             void addLight(const std::shared_ptr<physics::Light> &light);
@@ -58,5 +81,8 @@ namespace raytracer {
         private:
             Scene _scene;
             std::shared_ptr<Vec3f> _framebuffer;
+            std::binary_semaphore _rerenderSemaphore;
+            std::binary_semaphore _stopRender;
+            int _executeRender(void);
     };
 }
