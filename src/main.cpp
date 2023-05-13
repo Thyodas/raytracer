@@ -19,7 +19,6 @@
 #include "Parser/ObjParser.hpp"
 
 #include <thread>
-#include <pthread.h>
 #include <vector>
 #include <memory>
 #include <SFML/Graphics.hpp>
@@ -208,8 +207,8 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     image.create((int)core.camera.width, (int)core.camera.height, sf::Color::Black);
     sf::Texture texture;
     sf::Sprite sprite;
+    sf::Event event;
     while (window.isOpen()) {
-        sf::Event event;
         convertFrameBuffer((int)core.camera.width, (int)core.camera.height, core.getFrameBuffer(), image);
         texture.loadFromImage(image);
         sprite.setTexture(texture);
@@ -218,29 +217,31 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
                 core.stopRender();
                 window.close();
             }
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-                core.camera.rotateAroundOriginX(45);
-                core.requestRerender();
-            }
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-                core.camera.rotateAroundOriginZ(-45);
-                core.requestRerender();
-            }
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-                core.camera.rotateAroundOriginX(-45);
-                core.requestRerender();
-            }
-            if (event.type == sf::Event::KeyPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-                core.camera.rotateAroundOriginZ(45);
-                core.requestRerender();
-            }
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
+            core.camera.rotateAroundOriginX(45);
+            core.requestRerender();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+            core.camera.rotateAroundOriginZ(-45);
+            core.requestRerender();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
+            core.camera.rotateAroundOriginX(-45);
+            core.requestRerender();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+            core.camera.rotateAroundOriginZ(45);
+            std::cout << "rerender" << std::endl;
+            core.requestRerender();
         }
         window.clear(sf::Color::Black);
         window.draw(sprite);
         window.display();
     }
+    core.stopRender();
     render.join(); // block until Done: 100%
-    pthread_t pthread_id = render.native_handle();
-    pthread_cancel(pthread_id);
+/*    pthread_t pthread_id = render.native_handle();
+    pthread_cancel(pthread_id);*/
     return 0;
 }

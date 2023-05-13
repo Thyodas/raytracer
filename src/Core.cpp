@@ -61,15 +61,16 @@ namespace raytracer {
     {
         int returnValue = 0;
         while (1) {
+            for (uint32_t i = 0; i < camera.height * camera.width; ++i)
+                _framebuffer.get()[i] = {0};
             returnValue = _executeRender();
-            if (returnValue == 1) {
-                for (uint32_t i = 0; i < camera.height * camera.width; ++i)
-                    _framebuffer.get()[i] = {0};
-            }
-            if (returnValue == 2) {
-                // pthread_cancel(pthread_self());
+            if (returnValue == 1)
+                continue;
+            if (returnValue == 2)
                 break;
-            }
+            waitRerender();
+            if (checkStopRender())
+                break;
         };
     }
 }

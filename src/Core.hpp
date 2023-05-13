@@ -67,6 +67,7 @@ namespace raytracer {
 
             void stopRender(void) {
                 _stopRender.release(); //+1
+                requestRerender();
             }
             bool checkStopRender(void) {
                 return _stopRender.try_acquire();
