@@ -30,7 +30,6 @@ namespace primitive {
         //Vec3f normal = math::crossProduct(tmpA, tmpB);
         float denom = math::dotProduct(normal, direction);
         if (denom > 0) {
-            std::cout << "on a une intersect" << std::endl;
             Vec3f bOrig = math::normalize(b) - origin;
             tnear = math::dotProduct(bOrig, normal) / denom;
             //float t = math::dotProduct(originToPlane, normal) / denom;
