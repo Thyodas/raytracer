@@ -9,6 +9,7 @@
 
 #include "../shared/math/Vectors/Vec3.hpp"
 #include "../shared/math/Vectors/Vec2.hpp"
+#include "../shared/math/Vectors/VecUtils.hpp"
 #include "../shared/math/Matrix/Matrix44.hpp"
 #include "Transformable.hpp"
 
@@ -46,7 +47,17 @@ namespace primitive {
                                               const Vec2f &uv,
                                               Vec3f &normal,
                                               Vec2f &textCoord) const = 0;
-            virtual Vec3f evalDiffuseColor(const Vec2f &) const { return albedo; }
+            virtual Vec3f evalDiffuseColor(const Vec2f &txtCoord) const
+            {
+                if (txtType == DIFFUSE)
+                    return albedo;
+                if (txtType == CHECKER) {
+                    float scale = 5;
+                    float pattern = (fmodf(txtCoord.x * scale, 1) > 0.5) ^ (fmodf(txtCoord.y * scale, 1) > 0.5);
+                    return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
+                }
+                return Vec3f(0);
+            }
 
             MaterialType materialType = DIFFUSE_AND_GLOSSY;
             float refractionCoefficient = 1.5;
