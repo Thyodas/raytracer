@@ -116,9 +116,7 @@ namespace primitive {
     bool MeshTriangle::intersect(
             const Vec3f &origin,
             const Vec3f &direction,
-            float &tnear,
-            uint32_t &index,
-            Vec2f &uv)
+            intersectionInfo &isect)
     const
     {
         uint32_t j = 0;
@@ -130,21 +128,24 @@ namespace primitive {
             float t = std::numeric_limits<float>::max();
             float u = 0;
             float v = 0;
-            if (MollerTrumbore(a, b, c, origin, direction, t, u, v) && t < tnear) {
-                tnear = t;
-                uv.x = u;
-                uv.y = v;
-                index = i;
+            if (MollerTrumbore(a, b, c, origin, direction, t, u, v) && t < isect.tNear) {
+                isect.tNear = t;
+                isect.uv.x = u;
+                isect.uv.y = v;
+                isect.index = i;
+                isect.hitObject = this;
                 intersect = true;
             }
             j += 3;
         }
-
+        if (intersect) {
+            Vec2f txtCoord = Vec2f(0);
+            getTrianglesProperties(isect.index, isect.uv, isect.normal, txtCoord);
+            isect.color = evalTriangleColor(txtCoord);
+        }
         return intersect;
     }
-    void MeshTriangle::getSurfaceProperties(
-                __attribute__((unused))const Vec3f &point,
-                __attribute__((unused))const Vec3f &incident,
+    void MeshTriangle::getTrianglesProperties(
                 const uint32_t &index,
                 const Vec2f &uv,
                 Vec3f &normal,
@@ -172,7 +173,7 @@ namespace primitive {
         }
     }
 
-    Vec3f MeshTriangle::evalDiffuseColor(const Vec2f &textCoord) const
+    Vec3f MeshTriangle::evalTriangleColor(const Vec2f &textCoord) const
     {
         if (txtType == DIFFUSE)
             return albedo;

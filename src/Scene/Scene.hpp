@@ -21,17 +21,10 @@
 #include <limits>
 
 namespace raytracer {
-        struct IsectInfo
-        {
-            const primitive::Object *hitObject = nullptr;
-            float tNear = std::numeric_limits<float>::max();
-            Vec2f uv;
-            uint32_t index = 0;
-        };
-    class Scene {
+    class Scene : public primitive::Object {
         public:
             ~Scene() = default;
-            Scene(uint8_t maxDepth, float bias, Vec3f backGroundColor) : _maxDepth(maxDepth), _bias(bias), _backgroundColor(backGroundColor) {};
+            Scene(uint8_t maxDepth, float bias, Vec3f backGroundColor) : _maxDepth(maxDepth), _bias(bias), _backgroundColor(backGroundColor), Object(Matrix44f()) {};
 
             Vec3f castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth);
 
@@ -62,11 +55,25 @@ namespace raytracer {
             {
                 return _backgroundColor;
             }
+
+            bool intersect(
+                const Vec3f &origin,
+                const Vec3f &direction,
+                primitive::intersectionInfo &isect) const override;
+
+            void translate(Vec3f translation) override {};
+            void rotateAroundX(float angle) override {};
+            void rotateAroundY(float angle) override {};
+            void rotateAroundZ(float angle) override {};
+            void rotateAroundOriginX(float angle) override {};
+            void rotateAroundOriginY(float angle) override {};
+            void rotateAroundOriginZ(float angle) override {};
+            void scale(float x, float y, float z) override {}
         private:
             bool trace(
                 const Vec3f &origin, const Vec3f &direction,
-                IsectInfo &isect,
-                physics::RayType rayType = physics::PRIMARY_RAY);
+                primitive::intersectionInfo &isect,
+                physics::RayType rayType = physics::PRIMARY_RAY) const;
         private:
             uint8_t _maxDepth;
             float _bias;
