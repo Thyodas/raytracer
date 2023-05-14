@@ -51,7 +51,7 @@ namespace physics {
         public:
             PointLight(const Matrix44f &l2w, const Vec3f &color, const float intensity) : Light(l2w, color, intensity)
             {
-                l2w.multVecMatrix(Vec3f(0), pos);
+                l2w.multVecMatrix(Vec3f(0, 0, -1), pos);
             }
             void illuminate(const Vec3f &point, Vec3f &lightDirection, Vec3f &lightIntensity, float &distance) const override
             {
