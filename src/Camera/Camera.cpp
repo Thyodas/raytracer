@@ -49,19 +49,53 @@ namespace raytracer {
 
     void Camera::rotateAroundOriginX(float angle)
     {
-        math::rotateAroundOriginX(cameraToWorld, angle);
+        Matrix44f tmp1;
+        math::translate(tmp1, Vec3f(0, 0, -1) - orig);
+
+        Matrix44f tmp2;
+        tmp2[1][1] = cos(angle);
+        tmp2[1][2] = -sin(angle);
+        tmp2[2][1] = sin(angle);
+        tmp2[2][2] = cos(angle);
+
+        Matrix44f tmp3;
+        math::translate(tmp3, -(Vec3f(0, 0, -1) - orig));
+        cameraToWorld =  tmp3 * tmp2 * tmp1 ;
         cameraToWorld.multVecMatrix(orig, orig);
     }
 
     void Camera::rotateAroundOriginY(float angle)
     {
-        math::rotateAroundOriginY(cameraToWorld, angle);
+
+        Matrix44f tmp1;
+        math::translate(tmp1, Vec3f(0, 0, -1) - orig);
+
+        Matrix44f tmp2;
+        tmp2[0][0] = cos(angle);
+        tmp2[0][2] = sin(angle);
+        tmp2[2][0] = -sin(angle);
+        tmp2[2][2] = cos(angle);
+
+        Matrix44f tmp3;
+        math::translate(tmp3, -(Vec3f(0, 0, -1) - orig));
+        cameraToWorld =  tmp3 * tmp2 * tmp1 ;
         cameraToWorld.multVecMatrix(orig, orig);
     }
 
     void Camera::rotateAroundOriginZ(float angle)
     {
-        math::rotateAroundOriginZ(cameraToWorld, angle);
+            Matrix44f tmp1;
+        math::translate(tmp1, Vec3f(0, 0, -1) - orig);
+
+        Matrix44f tmp2;
+        tmp2[0][0] = cos(angle);
+        tmp2[0][1] = -sin(angle);
+        tmp2[1][0] = sin(angle);
+        tmp2[1][1] = cos(angle);
+
+        Matrix44f tmp3;
+        math::translate(tmp3, -(Vec3f(0, 0, -1) - orig));
+        cameraToWorld =  tmp3 * tmp2 * tmp1 ;
         cameraToWorld.multVecMatrix(orig, orig);
     }
 
