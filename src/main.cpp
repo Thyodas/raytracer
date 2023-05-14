@@ -138,9 +138,24 @@ void teapotScene(raytracer::Core &core)
 void plane_scene(raytracer::Core &core)
 {
     Matrix44f o2w;
-    primitive::Plane *plane = new primitive::Plane(o2w, Vec3f(0, 0, -1), Vec3f(0, 0, 1), Vec3f(0, -1, 0), Vec3f(0, 0, -1));
-    plane->albedo = Vec3f(0.6, 0, 0);
-    core.addObject(std::shared_ptr<primitive::Object>(plane));
+    math::translate(o2w, Vec3f(1, -1, 2));
+    primitive::Plane *right = new primitive::Plane(o2w, Vec3f(1, 0, 0.5), Vec3f(10, 10, -1));
+    right->txtType = primitive::CHECKER;
+    //plane->albedo = Vec3f(0.6, 0, 0);
+    core.addObject(std::shared_ptr<primitive::Object>(right));
+    primitive::Plane *floor = new primitive::Plane(o2w, Vec3f(0, -1, 0), Vec3f(10, 10, -1));
+    floor->txtType = primitive::CHECKER;
+    core.addObject(std::shared_ptr<primitive::Object>(floor));
+    primitive::Plane *left = new primitive::Plane(o2w, Vec3f(-1, 0, 0.9), Vec3f(-10, -10, 1));
+    core.addObject(std::shared_ptr<primitive::Object>(left));
+    primitive::Plane *ceilling = new primitive::Plane(o2w, Vec3f(0, 1, 0.7), Vec3f(10, 5, -5));
+    core.addObject(std::shared_ptr<primitive::Object>(ceilling));
+    primitive::Plane *back = new primitive::Plane(o2w, Vec3f(0, 5, 5), Vec3f(0, 0, 0));
+    core.addObject(std::shared_ptr<primitive::Object>(back));;
+    math::translate(o2w, Vec3f(0, 0.5, -2));
+    primitive::Sphere *sph = new primitive::Sphere(o2w, 0.5);
+    sph->albedo = Vec3f(0, 0.2, 0);
+    core.addObject(std::shared_ptr<primitive::Object>(sph));
 }
 
 int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
@@ -172,6 +187,8 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
 
     //Setup lights
     Matrix44f l2w;
+    //math::translate(l2w, Vec3f(0, 2, 1));
+    //math::rotateAroundOriginX(l2w, math::deg2Rad(-20));
     //math::translate(l2w, Vec3f(0, -5, -3));
     //math::rotateAroundOriginY(l2w, math::deg2Rad(45));
     //math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
@@ -179,7 +196,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //              -1.902827, -3.543982, -11.895445, 0,
     //              5.459804, 10.568624, -4.02205, 0,
     //              0, 1, 0, 1);
-    core.addLight(std::shared_ptr<physics::Light>(new physics::PointLight(l2w, Vec3f(0.5, 0, 0), 1)));
+    core.addLight(std::shared_ptr<physics::Light>(new physics::PointLight(l2w, Vec3f(0.1, 0.1, 0.9), 100)));
     //randomScene(core);
     //multipleSphereScene(core);
     //teapotScene(core);
