@@ -17,7 +17,8 @@ namespace primitive {
     enum MaterialType {
         DIFFUSE_AND_GLOSSY,
         REFLECTION_AND_REFRACTION,
-        REFLECTION
+        REFLECTION,
+        NB_MATERIAL_TYPE,
     };
 
     enum Texture {
