@@ -11,6 +11,7 @@ set(SRCS
     src/Primitives/MeshTriangle/MeshTriangle.cpp
     src/Primitives/Sphere/Sphere.cpp
     src/Primitives/Plane/Plane.cpp
+    src/Primitives/Cylindre/Cylindre.cpp
     src/Parser/ObjParser.cpp
     shared/math/analysis/analysis.cpp
     shared/math/Vectors/VecUtils.cpp
