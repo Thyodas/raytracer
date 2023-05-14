@@ -21,25 +21,28 @@ namespace raytracer {
 
     bool Scene::trace(
         const Vec3f &origin, const Vec3f &direction,
-        IsectInfo &isect,
-        physics::RayType rayType)
+        primitive::intersectionInfo &isect,
+        physics::RayType rayType) const
     {
         isect.hitObject = nullptr;
         for (uint32_t k = 0; k < objects.size(); ++k) {
-            float tNear = std::numeric_limits<float>::max();
-            uint32_t index = 0;
-            Vec2f uv;
-            if (objects[k]->intersect(origin, direction, tNear, index, uv) && tNear < isect.tNear) {
+            float tmpTnear = std::numeric_limits<float>::max();
+            if (objects[k]->intersect(origin, direction, isect) && isect.tNear < tmpTnear) {
                 if (rayType == physics::SHADOW_RAY && objects[k]->materialType == primitive::REFLECTION_AND_REFRACTION)
                     continue;
-                isect.hitObject = objects[k].get();
-                isect.tNear = tNear;
-                isect.index = index;
-                isect.uv = uv;
+                tmpTnear = isect.tNear;
             }
         }
 
         return (isect.hitObject != nullptr);
+    }
+
+    bool Scene::intersect(
+                const Vec3f &origin,
+                const Vec3f &direction,
+                primitive::intersectionInfo &isect) const
+    {
+        return trace(origin, direction, isect);
     }
 
     Vec3f computeDiffuseColorChannel(Vec3f N, Vec3f lightDir, Vec3f lightIntensity)
@@ -55,15 +58,14 @@ namespace raytracer {
     {
         if (depth > _maxDepth)
             return 0;
-        IsectInfo isect;
+        primitive::intersectionInfo isect;
         Vec3f hitColor = _backgroundColor;
         Vec2f uv;
         uint32_t index = 0;
         if (trace(orig, dir, isect)) {
             Vec3f hitPoint = orig + dir * isect.tNear;
-            Vec3f N;
-            Vec2f txtCoord;
-            isect.hitObject->getSurfaceProperties(hitPoint, dir,  isect.index, isect.uv, N, txtCoord);
+            Vec3f N = isect.normal;
+            Vec3f color = isect.color;
             switch (isect.hitObject->materialType) {
                 case primitive::REFLECTION_AND_REFRACTION:
                 {
@@ -99,7 +101,7 @@ namespace raytracer {
                 Vec3f specular = 0;
                 for (uint32_t i = 0; i < lights.size(); ++i) {
                     Vec3f lightDir, lightIntensity;
-                    IsectInfo isectShad;
+                    primitive::intersectionInfo isectShad;
                     lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
                     bool vis = !trace(hitPoint + N * _bias, -lightDir, isectShad, physics::SHADOW_RAY);
                     //Compute diffuse component
@@ -128,7 +130,7 @@ namespace raytracer {
                 indirectLigthing /= (float)nbSample;
                 directLighting /= M_PI;
 #endif
-                hitColor = (directLighting + indirectLigthing) * isect.hitObject->evalDiffuseColor(txtCoord);
+                hitColor = (directLighting + indirectLigthing) * color;
                 break;
                 }
             }

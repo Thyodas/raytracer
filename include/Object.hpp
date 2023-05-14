@@ -13,6 +13,8 @@
 #include "../shared/math/Matrix/Matrix44.hpp"
 #include "Transformable.hpp"
 
+#include <limits>
+
 namespace primitive {
     enum MaterialType {
         DIFFUSE_AND_GLOSSY,
@@ -27,38 +29,22 @@ namespace primitive {
         CHECKER
     };
 
+    struct intersectionInfo;
     class Object : public math::Transformable {
         public:
             virtual ~Object() = default;
-            Object(const Matrix44f &o2w) : materialType(DIFFUSE_AND_GLOSSY), refractionCoefficient(1.3), kd(0.8), ks(0.2), specularExponent(25), objectToWorld(o2w), worldtoObject(o2w.inverse()) {};
-            virtual bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &, Vec2f &) const = 0;
-            /**
-             * Calculates the surface properties of a mesh triangle at a given point.
-             *
-             * @param point The point on the triangle to calculate the surface properties for.
-             * @param incident The incident direction at the point.
-             * @param index The index of the triangle in the mesh.
-             * @param uv The texture coordinates at the point.
-             * @param normal [out] The normal vector at the point.
-             * @param textCoord [out] The texture coordinates at the point, interpolated from the triangle's vertices.
-             */
-            virtual void getSurfaceProperties(const Vec3f &point,
-                                              const Vec3f &incident,
-                                              const uint32_t &index,
-                                              const Vec2f &uv,
-                                              Vec3f &normal,
-                                              Vec2f &textCoord) const = 0;
-            virtual Vec3f evalDiffuseColor(const Vec2f &txtCoord) const
-            {
-                if (txtType == DIFFUSE)
-                    return albedo;
-                if (txtType == CHECKER) {
-                    float scale = 5;
-                    float pattern = (fmodf(txtCoord.x * scale, 1) > 0.5) ^ (fmodf(txtCoord.y * scale, 1) > 0.5);
-                    return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
-                }
-                return Vec3f(0);
-            }
+            Object(const Matrix44f &o2w) :
+                materialType(DIFFUSE_AND_GLOSSY),
+                refractionCoefficient(1.3),
+                kd(0.8),
+                ks(0.2),
+                specularExponent(25),
+                objectToWorld(o2w),
+                worldtoObject(o2w.inverse()) {};
+            virtual bool intersect(
+                const Vec3f &origin,
+                const Vec3f &direction,
+                intersectionInfo &isect) const = 0;
 
             MaterialType materialType = DIFFUSE_AND_GLOSSY;
             float refractionCoefficient = 1.5;
@@ -70,5 +56,14 @@ namespace primitive {
             Matrix44f objectToWorld;
             Matrix44f worldtoObject;
             Texture txtType = DIFFUSE;
+    };
+    struct intersectionInfo
+    {
+            const primitive::Object *hitObject = nullptr;
+            float tNear = std::numeric_limits<float>::max();
+            Vec2f uv;
+            uint32_t index = 0;
+            Vec3f normal;
+            Vec3f color;
     };
 }
