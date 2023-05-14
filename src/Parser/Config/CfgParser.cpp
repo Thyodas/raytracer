@@ -193,6 +193,12 @@ namespace Parser {
             setting.lookup("position.y"),
             setting.lookup("position.z")
         );
+        translate(l2w, pos);
+        Vec3f dir(
+            setting.lookup("direction.x"),
+            setting.lookup("direction.y"),
+            setting.lookup("direction.z")
+        );
         Vec3f color(
             setting.lookup("color.r"),
             setting.lookup("color.g"),
@@ -201,7 +207,7 @@ namespace Parser {
         auto light = std::make_shared<physics::DistantLight>(
             l2w, color, setting.lookup("intensity")
         );
-        light->dir = pos;
+        light->dir = math::normalize(dir);
         return light;
     }
 
@@ -222,6 +228,7 @@ namespace Parser {
         auto light = std::make_shared<physics::PointLight>(
             l2w, color, setting.lookup("intensity")
         );
+        light->pos = pos;
         return light;
     }
 

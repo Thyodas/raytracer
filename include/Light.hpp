@@ -66,7 +66,6 @@ namespace physics {
                 tmp.z /= 4 * M_PI * r2;
                 lightIntensity = tmp;
             }
-        private:
             Vec3f pos;
     };
 }

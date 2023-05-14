@@ -26,10 +26,10 @@ namespace raytracer {
     {
         isect.hitObject = nullptr;
         for (uint32_t k = 0; k < objects.size(); ++k) {
+            if (rayType == physics::SHADOW_RAY && objects[k]->materialType == primitive::REFLECTION_AND_REFRACTION)
+                continue;
             float tmpTnear = std::numeric_limits<float>::max();
             if (objects[k]->intersect(origin, direction, isect) && isect.tNear < tmpTnear) {
-                if (rayType == physics::SHADOW_RAY && objects[k]->materialType == primitive::REFLECTION_AND_REFRACTION)
-                    continue;
                 tmpTnear = isect.tNear;
             }
         }
