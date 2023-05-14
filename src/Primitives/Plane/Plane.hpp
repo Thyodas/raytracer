@@ -16,7 +16,7 @@ namespace primitive {
     class Plane : public Object {
         public:
             ~Plane() = default;
-            Plane(const Matrix44f &o2w, Vec3f vect1_o, Vec3f vect2_o, Vec3f vect1_d, Vec3f vect2_d);
+            Plane(const Matrix44f &o2w, Vec3f n, Vec3f p);
             bool intersect(
                 const Vec3f &origin,
                 const Vec3f &direction,
@@ -42,9 +42,7 @@ namespace primitive {
             void rotateAroundOriginZ(float angle) override {};
             void scale(float x, float y, float z) override {};
 
-            Vec3f a_o;
-            Vec3f a;
-            Vec3f b_o;
-            Vec3f b;
+            Vec3f normal;
+            Vec3f point;
     };
 }

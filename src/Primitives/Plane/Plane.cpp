@@ -9,7 +9,14 @@
 #include "../../../shared/math/analysis/analysis.hpp"
 
 namespace primitive {
-    Plane::Plane(const Matrix44f &o2w, Vec3f vect1_o, Vec3f vect2_o, Vec3f vect1_d, Vec3f vect2_d) : a_o(vect1_o), a(vect1_d), b_o(vect2_o), b(vect2_d), Object(o2w) {}
+    Plane::Plane(const Matrix44f &o2w, Vec3f n, Vec3f p) :  normal(n), point(p), Object(o2w)
+    {
+        o2w.multVecMatrix(Vec3f(0), point);
+        Matrix44f invert = o2w.inverse();
+        Matrix44f transformNormal = invert.transposed();
+        transformNormal.multDirMatrix(normal, normal);
+        normal = math::normalize(normal);
+    }
 
     bool Plane::intersect(
         const Vec3f &origin,
@@ -19,41 +26,13 @@ namespace primitive {
         Vec2f &uv)
         const
     {
-        //std::cout << "on rentre" << std::endl;
-        // Vec3f ortho = {
-        //     a.y * b.z - a.z * b.y,
-        //     (-a.x) * b.z - a.z * b.x,
-        //     a.x * b.y - a.y * b.x
-        // };
-        Vec3f normal = math::normalize(a);
-        //Vec3f tmpB = math::normalize(b);
-        //Vec3f normal = math::crossProduct(tmpA, tmpB);
         float denom = math::dotProduct(normal, direction);
         if (denom > 0) {
-            std::cout << "on a une intersect" << std::endl;
-            Vec3f bOrig = math::normalize(b) - origin;
+            Vec3f bOrig = point - origin;
             tnear = math::dotProduct(bOrig, normal) / denom;
-            //float t = math::dotProduct(originToPlane, normal) / denom;
             return (tnear >= 0);
         }
         return false;
-        // int scalar_product = ortho.x * direction.x + ortho.y * direction.y + ortho.z * direction.z;
-        // if (scalar_product == 0) {
-        //     //std::cout << "sclara product 0" << std::endl;
-        //     return false;
-        // }
-
-        // std::cout << scalar_product << std::endl;
-        // float t = (originToPlane.x * ortho.x + originToPlane.y * ortho.y + originToPlane.z * ortho.z) / scalar_product;
-
-        // if (t < 0) {
-        //     //std::cout << "c'est le t wola" << std::endl;
-        //     return false;
-        // }
-        // tnear = t;
-        // std::cout << tnear << std::endl;
-        // //std::cout << "eh ca ta mere" << std::endl;
-        return true;
     }
 
     void Plane::getSurfaceProperties(
@@ -65,7 +44,18 @@ namespace primitive {
             Vec2f &textCoord)
     const
     {
-        //normal = -math::normalize(a);
+        normal = -math::normalize(this->normal);
+
+        Vec3f e1 = math::normalize(math::crossProduct(normal, Vec3f(1, 0, 0)));
+        if (e1 == Vec3f(0))
+            e1 = math::normalize(math::crossProduct(normal, Vec3f(0, 0, 1)));
+        Vec3f e2 = math::normalize(math::crossProduct(normal, e1));
+        if (point.x > 0)
+            e2 = -e2;
+        if (point.y > 0)
+            e1 = -e1;
+        textCoord.x = math::dotProduct(e1, point);
+        textCoord.y = math::dotProduct(e2, point);
     }
-    
+
 }
