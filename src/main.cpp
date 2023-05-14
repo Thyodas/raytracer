@@ -218,7 +218,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 5)));
     //randomScene(core);
     //multipleSphereScene(core);
-    // teapotScene(core);
+    //teapotScene(core);
 
     std::thread render ([&core] () {core.render();});
     // pthread_create(&render, NULL, core.render(), NULL);

@@ -224,6 +224,7 @@ namespace Parser {
             mesh->albedo = opt.color;
             mesh->refractionCoefficient = 0.8;
             mesh->specularExponent = 5;
+            mesh->materialType = opt.materialType;
             result.push_back(mesh);
         }
         return result;
