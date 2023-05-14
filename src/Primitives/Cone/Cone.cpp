@@ -36,7 +36,6 @@ namespace primitive {
         float t0 = 0;
         float t1 = 0;
         if (!math::solveQuadratic(a, b, c, t0, t1)) {
-            std::cout << "false" << std::endl;
             return false;
         }
         if (t0 > t1)
@@ -44,7 +43,6 @@ namespace primitive {
         if (t0 < 0) {
             t0 = t1;
             if (t0 < 0) {
-                std::cout << "false" << std::endl;
                 return false;
             }
         }
