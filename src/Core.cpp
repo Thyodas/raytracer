@@ -28,7 +28,6 @@ namespace raytracer {
     {
         uint32_t index = 0;
         auto timeStart = std::chrono::high_resolution_clock::now();
-        std::cout << camera.orig << std::endl;
         for (uint32_t j = 0; j < camera.height; ++j) {
             for (uint32_t i = 0; i < camera.width; ++i) {
                 Vec3f dir;
