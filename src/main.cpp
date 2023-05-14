@@ -237,23 +237,22 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
                 core.stopRender();
                 window.close();
             }
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-            core.camera.rotateAroundOriginX(45);
-            core.requestRerender();
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-            core.camera.rotateAroundOriginZ(-45);
-            core.requestRerender();
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-            core.camera.rotateAroundOriginX(-45);
-            core.requestRerender();
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-            core.camera.rotateAroundOriginZ(45);
-            std::cout << "rerender" << std::endl;
-            core.requestRerender();
+            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Right) {
+                core.camera.rotateAroundOriginY(90);
+                core.requestRerender();
+            }
+            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Up) {
+                core.camera.rotateAroundOriginX(90);
+                core.requestRerender();
+            }
+            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Down) {
+                core.camera.rotateAroundOriginX(-90);
+                core.requestRerender();
+            }
+            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Left) {
+                core.camera.rotateAroundOriginY(-90);
+                core.requestRerender();
+            }
         }
         window.clear(sf::Color::Black);
         window.draw(sprite);
