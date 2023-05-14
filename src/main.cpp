@@ -119,6 +119,7 @@ void teapotScene(raytracer::Core &core)
     core.camera.translate(Vec3f(0, 5, 8));
     Parser::ObjParserData::TransformationsOptions opt = {
         .pos = Vec3f(0, 3, 12),
+        .color = Vec3f(0.2, 0, 0),
         //.pos = Vec3f(0, 0, -1),
         .scaleFactorX = 0.05,
         .scaleFactorY = 0.05,
@@ -127,7 +128,6 @@ void teapotScene(raytracer::Core &core)
         // .rotateYAxis = -90,
         // .rotateZAxis = -90,
         //.rotateZAxis = 45,
-        .color = Vec3f(0.2, 0, 0),
     };
     Parser::parseObj(core, opt, "./teapot.obj", false);
     Matrix44f transformSph1;

@@ -31,21 +31,8 @@ namespace primitive {
             bool intersect(
                 const Vec3f &origin,
                 const Vec3f &direction,
-                float &tnear,
-                uint32_t &index,
-                Vec2f &uv)
+                intersectionInfo &isect)
             const override;
-
-            void getSurfaceProperties(
-                const Vec3f &point,
-                const Vec3f &incident,
-                const uint32_t &index,
-                const Vec2f &uv,
-                Vec3f &normal,
-                Vec2f &textCoord)
-            const override;
-
-            Vec3f evalDiffuseColor(const Vec2f &textCoord) const override;
 
             void translate(Vec3f translation) override;
             void rotateAroundX(float angle) override;
@@ -67,5 +54,14 @@ namespace primitive {
                 const Vec3f &origin, const Vec3f &direction,
                 float &tnear, float &u, float &v
             ) const;
+
+            void getTrianglesProperties(
+                const uint32_t &index,
+                const Vec2f &uv,
+                Vec3f &normal,
+                Vec2f &textCoord)
+            const;
+
+            Vec3f evalTriangleColor(const Vec2f &textCoord) const;
     };
 }

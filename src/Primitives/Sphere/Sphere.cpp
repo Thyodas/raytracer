@@ -18,9 +18,7 @@ namespace primitive {
     bool Sphere::intersect(
             const Vec3f &origin,
             const Vec3f &direction,
-            float &tnear,
-            __attribute__((unused))uint32_t &index,
-            __attribute__((unused))Vec2f &uv)
+            intersectionInfo &isect)
     const
     {
         Vec3f L = origin - center;
@@ -38,14 +36,16 @@ namespace primitive {
             if (t0 < 0)
                 return false;
         }
-        tnear = t0;
+        isect.tNear = t0;
+        Vec3f hitPoint = origin + direction * isect.tNear;
+        Vec2f txtCoord = Vec2f(0);
+        getSphereProperties(hitPoint, isect.normal, txtCoord);
+        isect.color = evalSphereColor(txtCoord);
+        isect.hitObject = this;
         return true;
     }
-    void Sphere::getSurfaceProperties(
+    void Sphere::getSphereProperties(
             const Vec3f &point,
-            __attribute__((unused))const Vec3f &incident,
-            __attribute__((unused))const uint32_t &index,
-            __attribute__((unused))const Vec2f &uv,
             Vec3f &normal,
             Vec2f &textCoord)
     const
@@ -56,7 +56,7 @@ namespace primitive {
         textCoord.y = acosf(normal.y) / M_PI;
     }
 
-    Vec3f Sphere::evalDiffuseColor(const Vec2f &txtCoord) const
+    Vec3f Sphere::evalSphereColor(const Vec2f &txtCoord) const
     {
         if (txtType == DIFFUSE)
             return albedo;
