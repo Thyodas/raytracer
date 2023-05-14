@@ -18,6 +18,8 @@ namespace math {
             Vec3() : x(0), y(0) {};
             Vec3(T xx) : x(xx), y(xx), z(xx) {};
             Vec3(T xx, T yy, T zz) : x(xx), y(yy), z(zz) {};
+        
+        bool operator==(const Vec3 &v) const {return (x == v.x && y == v.y && z == v.z);}
 
         Vec3 operator*(const float &r) const {return Vec3(x * r, y * r, z * r);}
         Vec3 operator*(const Vec3 &v) const {return Vec3(x * v.x, y * v.y, z * v.z);}
