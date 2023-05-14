@@ -30,7 +30,6 @@ namespace raytracer {
             uint32_t index = 0;
             Vec2f uv;
             if (objects[k]->intersect(origin, direction, tNear, index, uv) && tNear < isect.tNear) {
-                std::cout << "la cond passe" << std::endl;
                 if (rayType == physics::SHADOW_RAY && objects[k]->materialType == primitive::REFLECTION_AND_REFRACTION)
                     continue;
                 isect.hitObject = objects[k].get();
@@ -54,7 +53,6 @@ namespace raytracer {
 
     Vec3f Scene::castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth)
     {
-        //std::cout << "aled" << std::endl;
         if (depth > _maxDepth)
             return 0;
         IsectInfo isect;
@@ -99,13 +97,11 @@ namespace raytracer {
                 {
                 Vec3f directLighting = 0;
                 Vec3f specular = 0;
-                std::cout << "test" << std::endl;
                 for (uint32_t i = 0; i < lights.size(); ++i) {
                     Vec3f lightDir, lightIntensity;
                     IsectInfo isectShad;
                     lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
                     bool vis = !trace(hitPoint + N * _bias, -lightDir, isectShad, physics::SHADOW_RAY);
-                    std::cout << vis << std::endl;
                     //Compute diffuse component
                     directLighting += vis * lightIntensity * std::max(0.f, math::dotProduct(N, -lightDir));
                     Vec3f R = physics::reflect(lightDir, N);
@@ -113,7 +109,7 @@ namespace raytracer {
                     directLighting += vis * lightIntensity * std::pow(std::max(0.f, math::dotProduct(R, -dir)), isect.hitObject->specularExponent);
                 }
                 Vec3f indirectLigthing = 0;
-#if 1
+#if 0
                 uint32_t nbSample = 8;
                 Vec3f Nt, Nb;
                 math::createCoordinateSystem(N, Nt, Nb);
