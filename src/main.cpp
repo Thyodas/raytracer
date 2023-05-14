@@ -18,8 +18,10 @@
 #include "Parser.hpp"
 #include "Parser/ObjParser.hpp"
 
+#include <thread>
 #include <vector>
 #include <memory>
+#include <SFML/Graphics.hpp>
 
 inline float randomFloat()
 {
@@ -135,6 +137,20 @@ void teapotScene(raytracer::Core &core)
     core.addObject(std::shared_ptr<primitive::Object>(sph1));
 }
 
+void convertFrameBuffer(int width, int height, std::shared_ptr<Vec3f> frameBuffer, sf::Image &image)
+{
+    int i = 0;
+    for (int line = 0; line < height; ++line) {
+        for (int col = 0; col < width; ++col) {
+            sf::Uint8 r = (sf::Uint8)(255 * math::clamp(0, 1, (frameBuffer.get())[i].x));
+            sf::Uint8 g = (sf::Uint8)(255 * math::clamp(0, 1, (frameBuffer.get())[i].y));
+            sf::Uint8 b = (sf::Uint8)(255 * math::clamp(0, 1, (frameBuffer.get())[i].z));
+            image.setPixel(col, line, {r, g, b, 255});
+            ++i;
+        }
+    }
+}
+
 void plane_scene(raytracer::Core &core)
 {
     Matrix44f o2w;
@@ -198,11 +214,51 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //              0, 1, 0, 1);
     core.addLight(std::shared_ptr<physics::Light>(new physics::PointLight(l2w, Vec3f(0.1, 0.1, 0.9), 100)));
     //randomScene(core);
-    //multipleSphereScene(core);
-    //teapotScene(core);
-    plane_scene(core);
+    multipleSphereScene(core);
+    // teapotScene(core);
 
-
-    core.render();
+    std::thread render ([&core] () {core.render();});
+    // pthread_create(&render, NULL, core.render(), NULL);
+    sf::RenderWindow window(sf::VideoMode((int)core.camera.width, (int)core.camera.height), "Raytracer");
+    sf::Image image;
+    image.create((int)core.camera.width, (int)core.camera.height, sf::Color::Black);
+    sf::Texture texture;
+    sf::Sprite sprite;
+    sf::Event event;
+    while (window.isOpen()) {
+        convertFrameBuffer((int)core.camera.width, (int)core.camera.height, core.getFrameBuffer(), image);
+        texture.loadFromImage(image);
+        sprite.setTexture(texture);
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                core.stopRender();
+                window.close();
+            }
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
+            core.camera.rotateAroundOriginX(45);
+            core.requestRerender();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+            core.camera.rotateAroundOriginZ(-45);
+            core.requestRerender();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
+            core.camera.rotateAroundOriginX(-45);
+            core.requestRerender();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+            core.camera.rotateAroundOriginZ(45);
+            std::cout << "rerender" << std::endl;
+            core.requestRerender();
+        }
+        window.clear(sf::Color::Black);
+        window.draw(sprite);
+        window.display();
+    }
+    core.stopRender();
+    render.join(); // block until Done: 100%
+/*    pthread_t pthread_id = render.native_handle();
+    pthread_cancel(pthread_id);*/
     return 0;
 }

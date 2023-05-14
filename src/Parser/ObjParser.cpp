@@ -12,6 +12,7 @@
 #include "../../shared/math/utils.hpp"
 #include <limits>
 #include <memory>
+#include <sstream>
 
 namespace Parser {
     inline void printObjects(std::unique_ptr<Parser::ObjParser> &parser)
