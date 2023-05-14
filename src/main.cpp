@@ -229,6 +229,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     sf::Sprite sprite;
     sf::Event event;
     while (window.isOpen()) {
+        fprintf(stderr, "\rStatus: % 7.2f %%", core.getCompletionPercentage());
         convertFrameBuffer((int)core.camera.width, (int)core.camera.height, core.getFrameBuffer(), image);
         texture.loadFromImage(image);
         sprite.setTexture(texture);
@@ -258,6 +259,7 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
         window.draw(sprite);
         window.display();
     }
+    fprintf(stderr, "\n");
     core.stopRender();
     render.join(); // block until Done: 100%
 /*    pthread_t pthread_id = render.native_handle();

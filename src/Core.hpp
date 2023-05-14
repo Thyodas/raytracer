@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <semaphore>
+#include <thread>
 
 namespace raytracer {
     class Core {
@@ -33,9 +34,14 @@ namespace raytracer {
                 camera(c2w, width, height, fov),
                 _scene(maxDepth, bias, backgroundColor),
                 _rerenderSemaphore(0),
-                _stopRender(0)
+                _writeIndex(0),
+                _framebufferSize(width * height),
+                _width(width),
+                _height(height),
+                _nbThreads(std::thread::hardware_concurrency()),
+                _stopRender(false)
             {
-                _framebuffer = std::unique_ptr<Vec3f>(new Vec3f[width * height]);
+                _framebuffer = std::unique_ptr<Vec3f>(new Vec3f[_framebufferSize]);
             };
 
             void setWidth(uint32_t width) { camera.width = width;}
@@ -53,7 +59,8 @@ namespace raytracer {
             std::shared_ptr<Vec3f> getFrameBuffer(void) const { return _framebuffer;}
 
             void requestRerender(void) {
-                _rerenderSemaphore.release();
+                _resetWriteIndex();
+                _rerenderSemaphore.release(_nbThreads - 1);
             }
 
             bool waitRerender(void) {
@@ -66,16 +73,17 @@ namespace raytracer {
             }
 
             void stopRender(void) {
-                _stopRender.release(); //+1
+                _stopRender = true;
                 requestRerender();
             }
             bool checkStopRender(void) {
-                return _stopRender.try_acquire();
+                return _stopRender;
             }
 
             void render(void);
             void addObject(const std::shared_ptr<primitive::Object> &obj);
             void addLight(const std::shared_ptr<physics::Light> &light);
+            float getCompletionPercentage(void);
 
         public:
             Camera camera;
@@ -83,7 +91,17 @@ namespace raytracer {
             Scene _scene;
             std::shared_ptr<Vec3f> _framebuffer;
             std::binary_semaphore _rerenderSemaphore;
-            std::binary_semaphore _stopRender;
+            std::mutex _writeIndexMutex;
+            uint64_t _writeIndex;
+            uint64_t _framebufferSize;
+            uint64_t _width;
+            uint64_t _height;
+            long _nbThreads;
+            bool _stopRender;
+
             int _executeRender(void);
+            uint64_t _getWriteIndex(void);
+            uint64_t _getNewWriteIndex(void);
+            void _resetWriteIndex(void);
     };
 }

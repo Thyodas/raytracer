@@ -26,23 +26,22 @@ namespace raytracer {
 
     int Core::_executeRender(void)
     {
-        uint32_t index = 0;
-        auto timeStart = std::chrono::high_resolution_clock::now();
-        for (uint32_t j = 0; j < camera.height; ++j) {
-            for (uint32_t i = 0; i < camera.width; ++i, ++index) {
-                Vec3f dir;
-                camera.getDir(i, j, dir);
-                (_framebuffer.get())[index] = _scene.castRay(camera.orig, dir, 0);
-                if (checkRerender())
-                    return 1;
-                if (checkStopRender())
-                    return 2;
-            }
-            fprintf(stderr, "\r%3d%c", uint32_t(j / (float)camera.height * 100), '%');
+
+        uint64_t index = 0;
+        float i, j;
+        while ((index = _getNewWriteIndex()) < _framebufferSize) {
+            i = (float)(index % _width);
+            j = (float)(index / _width);
+            Vec3f dir;
+            camera.getDir(i, j, dir);
+            (_framebuffer.get())[index] = _scene.castRay(camera.orig, dir, 0);
+            if (checkRerender())
+                return 1;
+            if (checkStopRender())
+                return 2;
         }
-        auto timeEnd = std::chrono::high_resolution_clock::now();
-        auto passedTime = std::chrono::duration<double, std::milli>(timeEnd - timeStart).count();
-        fprintf(stderr, "\rDone: %.2f (sec)\n", passedTime / 1000);
+        if (index != _framebufferSize)
+            return 0;
         std::ofstream ofs;
         ofs.open("./out.ppm");
         ofs << "P6\n" << camera.width << " " << camera.height << "\n255\n";
@@ -58,18 +57,58 @@ namespace raytracer {
 
     void Core::render(void)
     {
-        int returnValue = 0;
-        while (1) {
-            for (uint32_t i = 0; i < camera.height * camera.width; ++i)
-                _framebuffer.get()[i] = {0};
-            returnValue = _executeRender();
-            if (returnValue == 1)
-                continue;
-            if (returnValue == 2)
-                break;
-            waitRerender();
-            if (checkStopRender())
-                break;
-        };
+        std::vector <std::thread> threads;
+        for (unsigned int i = 0; i < _nbThreads - 1; ++i) {
+            std::thread worker([this]() {
+                int returnValue;
+                while (1) {
+                    if (_getWriteIndex() == 0) {
+                        for (uint32_t i = 0 ; i < _framebufferSize ; ++i)
+                            _framebuffer.get()[i] = {0};
+                    };
+                    returnValue = _executeRender();
+                    if (returnValue == 1)
+                        continue;
+                    if (returnValue == 2)
+                        break;
+                    waitRerender();
+                    if (checkStopRender())
+                        break;
+                };
+            });
+            threads.push_back(std::move(worker));
+        }
+        for(auto &t: threads){
+            t.join();
+        }
+    }
+
+    uint64_t Core::_getNewWriteIndex(void)
+    {
+        uint64_t newWriteIndex;
+        _writeIndexMutex.lock();
+        newWriteIndex = _writeIndex++;
+        _writeIndexMutex.unlock();
+        return newWriteIndex;
+    }
+
+    void Core::_resetWriteIndex(void)
+    {
+        _writeIndexMutex.lock();
+        _writeIndex = 0;
+        _writeIndexMutex.unlock();
+    }
+
+    uint64_t Core::_getWriteIndex(void)
+    {
+        _writeIndexMutex.lock();
+        _writeIndex;
+        _writeIndexMutex.unlock();
+        return _writeIndex;
+    }
+
+    float Core::getCompletionPercentage(void)
+    {
+        return (float)_getWriteIndex() / (float)_framebufferSize * 100;
     }
 }
