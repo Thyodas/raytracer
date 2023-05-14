@@ -17,6 +17,7 @@
 #include "../../Primitives/Sphere/Sphere.hpp"
 #include "../../Camera/Camera.hpp"
 #include "../Object/ObjParser.hpp"
+#include "../../Primitives/Plane/Plane.hpp"
 
 namespace Parser {
 
@@ -69,6 +70,7 @@ namespace Parser {
 
             void _getObjectBase(primitive::Object &object, const libconfig::Setting &setting);
             std::shared_ptr<primitive::Sphere> _getSphere(const libconfig::Setting &setting);
+            std::shared_ptr<primitive::Plane> _getPlane(const libconfig::Setting &setting);
             std::vector<std::shared_ptr<primitive::MeshTriangle>> _getObj(const libconfig::Setting &setting);
 
             std::shared_ptr<physics::DistantLight> _getDistantLight(const libconfig::Setting &setting);

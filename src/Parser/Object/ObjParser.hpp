@@ -49,6 +49,7 @@ namespace Parser {
             float ks = 0.2;
             float ka = 0.2;
             primitive::MaterialType materialType = primitive::MaterialType::DIFFUSE_AND_GLOSSY;
+            primitive::Texture txtType = primitive::Texture::DIFFUSE;
         };
 
         typedef std::vector<std::shared_ptr<primitive::MeshTriangle>> MeshTriangles;

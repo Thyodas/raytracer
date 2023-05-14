@@ -26,7 +26,8 @@ namespace primitive {
     enum Texture {
         DIFFUSE,
         TEXTURE,
-        CHECKER
+        CHECKER,
+        NB_TXT_TYPE,
     };
 
     struct intersectionInfo;

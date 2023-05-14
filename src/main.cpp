@@ -155,46 +155,49 @@ void convertFrameBuffer(int width, int height, std::shared_ptr<Vec3f> frameBuffe
 void plane_scene(raytracer::Core &core)
 {
     Matrix44f o2w;
-    math::translate(o2w, Vec3f(1, -1, 2));
-    primitive::Plane *right = new primitive::Plane(o2w, Vec3f(1, 0, 0.5), Vec3f(10, 10, -1));
+    //math::translate(o2w, Vec3f(1, -1, 2));
+/*    primitive::Plane *right = new primitive::Plane(o2w, Vec3f(1, 0, 0.5), Vec3f(10, 10, -1));
     right->txtType = primitive::CHECKER;
     //plane->albedo = Vec3f(0.6, 0, 0);
-    core.addObject(std::shared_ptr<primitive::Object>(right));
-    primitive::Plane *floor = new primitive::Plane(o2w, Vec3f(0, -1, 0), Vec3f(10, 10, -1));
+    core.addObject(std::shared_ptr<primitive::Object>(right));*/
+/*    primitive::Plane *floor = new primitive::Plane(o2w, Vec3f(0, -1, 0), Vec3f(10, 10, -1));
     floor->txtType = primitive::CHECKER;
-    core.addObject(std::shared_ptr<primitive::Object>(floor));
-    primitive::Plane *left = new primitive::Plane(o2w, Vec3f(-1, 0, 0.9), Vec3f(-10, -10, 1));
+    core.addObject(std::shared_ptr<primitive::Object>(floor));*/
+/*    primitive::Plane *left = new primitive::Plane(o2w, Vec3f(-1, 0, 0.9), Vec3f(-10, -10, 1));
     core.addObject(std::shared_ptr<primitive::Object>(left));
     primitive::Plane *ceilling = new primitive::Plane(o2w, Vec3f(0, 1, 0.7), Vec3f(10, 5, -5));
-    core.addObject(std::shared_ptr<primitive::Object>(ceilling));
-    primitive::Plane *back = new primitive::Plane(o2w, Vec3f(0, 5, 5), Vec3f(0, 0, 0));
+    core.addObject(std::shared_ptr<primitive::Object>(ceilling));*/
+/*    primitive::Plane *back = new primitive::Plane(o2w, Vec3f(0, 5, 5), Vec3f(0, 0, 0));
     core.addObject(std::shared_ptr<primitive::Object>(back));;
     math::translate(o2w, Vec3f(0, 0.5, -2));
     primitive::Sphere *sph = new primitive::Sphere(o2w, 0.5);
     sph->albedo = Vec3f(0, 0.2, 0);
-    core.addObject(std::shared_ptr<primitive::Object>(sph));
+    core.addObject(std::shared_ptr<primitive::Object>(sph));*/
 }
 
-int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
+int main(int argc, char **argv)
 {
-    // get config
-    Parser::CfgParser cfgParser("./src/Parser/Config/scene.cfg");
+    try {
+        // get config
+        if (argc != 2)
+            throw std::runtime_error("invalid path argument");
+        Parser::CfgParser cfgParser(argv[1]);
 
-    Parser::CfgParserData::Camera camera = cfgParser.getCamera();
-    Parser::CfgParserData::Primitives prim = cfgParser.getPrimitives();
-    Parser::CfgParserData::Lights lights = cfgParser.getLights();
+        Parser::CfgParserData::Camera camera = cfgParser.getCamera();
+        Parser::CfgParserData::Primitives prim = cfgParser.getPrimitives();
+        Parser::CfgParserData::Lights lights = cfgParser.getLights();
 
-    raytracer::Core core(camera.cameraToWorld, camera.width, camera.height);
-    core.camera = camera;
+        raytracer::Core core(camera.cameraToWorld, camera.width, camera.height);
+        core.camera = camera;
 
-    for (auto &item: prim)
-        core.addObject(item);
+        for (auto &item: prim)
+            core.addObject(item);
 
-    for (auto &item: lights)
-        core.addLight(item);
-    //Setup obj
-    Matrix44f objectToWorld;
-    Parser::ObjParserData::TransformationsOptions opt = {
+        for (auto &item: lights)
+            core.addLight(item);
+        //Setup obj
+/*        Matrix44f objectToWorld;
+        Parser::ObjParserData::TransformationsOptions opt = {
             .pos = Vec3f(0, 1, -1),
             // .scaleFactorX = 2.5,
             // .scaleFactorY = 2.5,
@@ -203,66 +206,73 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
             // .rotateYAxis = -90,
             // .rotateZAxis = -90,
             // .rotateZAxis = 45,
-    };
-    Parser::parseObj(core, opt, "./plane.obj", true);
+        };*/
+        //Parser::parseObj(core, opt, "./plane.obj", false);
 
-    //Setup lights
-    //Matrix44f l2w;
-    //math::translate(l2w, Vec3f(0, -5, -3));
-    //math::rotateAroundOriginY(l2w, math::deg2Rad(45));
-    //math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
-    // Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0,
-    //              -1.902827, -3.543982, -11.895445, 0,
-    //              5.459804, 10.568624, -4.02205, 0,
-    //              0, 1, 0, 1);
-    //core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 5)));
-    //randomScene(core);
-    //multipleSphereScene(core);
-    //teapotScene(core);
+        //Setup lights
+        //Matrix44f l2w;
+        //math::translate(l2w, Vec3f(0, -5, -3));
+        //math::rotateAroundOriginY(l2w, math::deg2Rad(45));
+        //math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
+        // Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0,
+        //              -1.902827, -3.543982, -11.895445, 0,
+        //              5.459804, 10.568624, -4.02205, 0,
+        //              0, 1, 0, 1);
+        //core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 5)));
+        //randomScene(core);
+        //multipleSphereScene(core);
+        //teapotScene(core);
+        plane_scene(core);
 
-    std::thread render ([&core] () {core.render();});
-    // pthread_create(&render, NULL, core.render(), NULL);
-    sf::RenderWindow window(sf::VideoMode((int)core.camera.width, (int)core.camera.height), "Raytracer");
-    sf::Image image;
-    image.create((int)core.camera.width, (int)core.camera.height, sf::Color::Black);
-    sf::Texture texture;
-    sf::Sprite sprite;
-    sf::Event event;
-    while (window.isOpen()) {
-        fprintf(stderr, "\rStatus: % 7.2f %%", core.getCompletionPercentage());
-        convertFrameBuffer((int)core.camera.width, (int)core.camera.height, core.getFrameBuffer(), image);
-        texture.loadFromImage(image);
-        sprite.setTexture(texture);
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                core.stopRender();
-                window.close();
+        std::thread render([&core]() {
+            core.render();
+        });
+        // pthread_create(&render, NULL, core.render(), NULL);
+        sf::RenderWindow window(sf::VideoMode((int)core.camera.width, (int) core.camera.height), "Raytracer");
+        sf::Image image;
+        image.create((int) core.camera.width, (int) core.camera.height, sf::Color::Black);
+        sf::Texture texture;
+        sf::Sprite sprite;
+        sf::Event event;
+        while (window.isOpen()) {
+            fprintf(stderr, "\rStatus: % 7.2f %%", core.getCompletionPercentage());
+            convertFrameBuffer((int) core.camera.width, (int) core.camera.height, core.getFrameBuffer(), image);
+            texture.loadFromImage(image);
+            sprite.setTexture(texture);
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed) {
+                    core.stopRender();
+                    window.close();
+                }
+                if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Right) {
+                    core.camera.rotateAroundOriginY(90);
+                    core.requestRerender();
+                }
+                if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Up) {
+                    core.camera.rotateAroundOriginX(90);
+                    core.requestRerender();
+                }
+                if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Down) {
+                    core.camera.rotateAroundOriginX(-90);
+                    core.requestRerender();
+                }
+                if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Left) {
+                    core.camera.rotateAroundOriginY(-90);
+                    core.requestRerender();
+                }
             }
-            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Right) {
-                core.camera.rotateAroundOriginY(90);
-                core.requestRerender();
-            }
-            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Up) {
-                core.camera.rotateAroundOriginX(90);
-                core.requestRerender();
-            }
-            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Down) {
-                core.camera.rotateAroundOriginX(-90);
-                core.requestRerender();
-            }
-            if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Left) {
-                core.camera.rotateAroundOriginY(-90);
-                core.requestRerender();
-            }
+            window.clear(sf::Color::Black);
+            window.draw(sprite);
+            window.display();
         }
-        window.clear(sf::Color::Black);
-        window.draw(sprite);
-        window.display();
+        fprintf(stderr, "\n");
+        core.stopRender();
+        render.join(); // block until Done: 100%
+        /*    pthread_t pthread_id = render.native_handle();
+            pthread_cancel(pthread_id);*/
+        return 0;
+    } catch (std::exception &e) {
+        std::cerr << "raytracer: " << e.what() << "." << std::endl;
+        return 84;
     }
-    fprintf(stderr, "\n");
-    core.stopRender();
-    render.join(); // block until Done: 100%
-/*    pthread_t pthread_id = render.native_handle();
-    pthread_cancel(pthread_id);*/
-    return 0;
 }

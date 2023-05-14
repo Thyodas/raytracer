@@ -65,8 +65,12 @@ namespace Parser {
         object.ka = setting.lookup("ka");
         int material = setting.lookup("materialType");
         if (material < 0 || material >= primitive::NB_MATERIAL_TYPE)
-            throw ParseFailureException("invalid material type.");
+            throw ParseFailureException("invalid material type");
         object.materialType = (primitive::MaterialType)material;
+        int txt = setting.lookup("txtType");
+        if (txt < 0 || txt >= primitive::NB_TXT_TYPE)
+            throw ParseFailureException("invalid texture type");
+        object.txtType = (primitive::Texture)txt;
         object.albedo.x = setting.lookup("albedo.r");
         object.albedo.y = setting.lookup("albedo.g");
         object.albedo.z = setting.lookup("albedo.b");
@@ -89,6 +93,30 @@ namespace Parser {
         return sphere;
     }
 
+    std::shared_ptr<primitive::Plane> CfgParser::_getPlane(const libconfig::Setting &setting)
+    {
+        Matrix44f identity = Matrix44f(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+        //math::translate(identity, Vec3f(1, -1, 2));
+        Vec3f point(
+            setting.lookup("point.x"),
+            setting.lookup("point.y"),
+            setting.lookup("point.z")
+        );
+
+        Vec3f normal(
+            setting.lookup("normal.x"),
+            setting.lookup("normal.y"),
+            setting.lookup("normal.z")
+        );
+        std::shared_ptr<primitive::Plane> plane =
+            std::make_shared<primitive::Plane>(identity, normal, point);
+        _getObjectBase(*plane, setting.lookup("object"));
+        return plane;
+    }
+
     std::vector<std::shared_ptr<primitive::MeshTriangle>> CfgParser::_getObj(const libconfig::Setting &setting)
     {
         ObjParser parser;
@@ -108,7 +136,11 @@ namespace Parser {
 
         int material = setting.lookup("object.materialType");
         if (material < 0 || material >= primitive::NB_MATERIAL_TYPE)
-            throw ParseFailureException("invalid material type.");
+            throw ParseFailureException("invalid material type");
+
+        int txt = setting.lookup("object.txtType");
+        if (txt < 0 || txt >= primitive::NB_TXT_TYPE)
+            throw ParseFailureException("invalid texture type");
 
         ObjParserData::TransformationsOptions opt = {
             .pos = pos,
@@ -122,7 +154,8 @@ namespace Parser {
             .kd = setting.lookup("object.kd"),
             .ks = setting.lookup("object.ks"),
             .ka = setting.lookup("object.ka"),
-            .materialType = (primitive::MaterialType)material,
+            .materialType = static_cast<primitive::MaterialType>(material),
+            .txtType = static_cast<primitive::Texture>(txt),
         };
 
         auto meshes = parser.getMeshTriangles(opt);
@@ -138,6 +171,10 @@ namespace Parser {
             const libconfig::Setting &spheres = root["primitives"]["spheres"];
             for (const auto &item: spheres)
                 result.push_back(_getSphere(item));
+
+            const libconfig::Setting &planes = root["primitives"]["planes"];
+            for (const auto &item: planes)
+                result.push_back(_getPlane(item));
 
             const libconfig::Setting &objects = root["primitives"]["obj"];
             for (const auto &item: objects)

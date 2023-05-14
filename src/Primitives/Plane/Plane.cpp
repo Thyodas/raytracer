@@ -9,7 +9,7 @@
 #include "../../../shared/math/analysis/analysis.hpp"
 
 namespace primitive {
-    Plane::Plane(const Matrix44f &o2w, Vec3f n, Vec3f p) :  normal(n), point(p), Object(o2w)
+    Plane::Plane(const Matrix44f &o2w, Vec3f n, Vec3f p) :  Object(o2w), normal(n), point(p)
     {
         o2w.multVecMatrix(Vec3f(0), point);
         Matrix44f invert = o2w.inverse();
@@ -70,7 +70,7 @@ namespace primitive {
             float pattern = (fmodf(txtCoord.x * scale, 1) > 0.5) ^ (fmodf(txtCoord.y * scale, 1) > 0.5);
             return math::mix(Vec3f(0.0, 0.0, 0.0), Vec3f(1, 1, 1), pattern);
         }
-        return Vec3f(0);
+        return {0};
     }
 
 }

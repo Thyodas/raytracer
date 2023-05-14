@@ -111,7 +111,7 @@ namespace raytracer {
                     directLighting += vis * lightIntensity * std::pow(std::max(0.f, math::dotProduct(R, -dir)), isect.hitObject->specularExponent);
                 }
                 Vec3f indirectLigthing = 0;
-#if 0
+#if 1
                 uint32_t nbSample = 8;
                 Vec3f Nt, Nb;
                 math::createCoordinateSystem(N, Nt, Nb);
