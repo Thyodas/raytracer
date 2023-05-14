@@ -16,7 +16,8 @@
 #include "../shared/math/Matrix/MatrixTransformation.hpp"
 #include "../shared/math/Matrix/Matrix44.hpp"
 #include "Parser.hpp"
-#include "Parser/ObjParser.hpp"
+#include "Parser/Object/ObjParser.hpp"
+#include "Parser/Config/CfgParser.hpp"
 
 #include <thread>
 #include <vector>
@@ -116,7 +117,7 @@ void oneDiffuseSphereOneRefractionSphere(raytracer::Core &core)
 void teapotScene(raytracer::Core &core)
 {
     core.camera.translate(Vec3f(0, 5, 8));
-    Parser::ObjParserData::transformationsOptions opt = {
+    Parser::ObjParserData::TransformationsOptions opt = {
         .pos = Vec3f(0, 3, 12),
         //.pos = Vec3f(0, 0, -1),
         .scaleFactorX = 0.05,
@@ -176,20 +177,24 @@ void plane_scene(raytracer::Core &core)
 
 int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
 {
-    //Setup Core
-    // Matrix44f cameraToWorld = Matrix44f(1, 0, 0, 0,
-    //                                     0, 1, 0, 0,
-    //                                     0, 0, 1, 0,
-    //                                     0, 3, 12, 1);
-    Matrix44f cameraToWorld;
-    // math::rotateAroundOriginY(cameraToWorld, math::deg2Rad(45));
-    // math::translate(cameraToWorld, Vec3f(0, 5, 8));
-    raytracer::Core core(cameraToWorld);
-    core.setFov(90);
+    // get config
+    Parser::CfgParser cfgParser("./src/Parser/Config/scene.cfg");
 
+    Parser::CfgParserData::Camera camera = cfgParser.getCamera();
+    Parser::CfgParserData::Primitives prim = cfgParser.getPrimitives();
+    Parser::CfgParserData::Lights lights = cfgParser.getLights();
+
+    raytracer::Core core(camera.cameraToWorld, camera.width, camera.height);
+    core.camera = camera;
+
+    for (auto &item: prim)
+        core.addObject(item);
+
+    for (auto &item: lights)
+        core.addLight(item);
     //Setup obj
     Matrix44f objectToWorld;
-    Parser::ObjParserData::transformationsOptions opt = {
+    Parser::ObjParserData::TransformationsOptions opt = {
             .pos = Vec3f(0, 1, -1),
             // .scaleFactorX = 2.5,
             // .scaleFactorY = 2.5,
@@ -199,12 +204,10 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
             // .rotateZAxis = -90,
             // .rotateZAxis = 45,
     };
-    //Parser::parseObj(core, opt, "./plane.obj", true);
+    Parser::parseObj(core, opt, "./plane.obj", true);
 
     //Setup lights
-    Matrix44f l2w;
-    //math::translate(l2w, Vec3f(0, 2, 1));
-    //math::rotateAroundOriginX(l2w, math::deg2Rad(-20));
+    //Matrix44f l2w;
     //math::translate(l2w, Vec3f(0, -5, -3));
     //math::rotateAroundOriginY(l2w, math::deg2Rad(45));
     //math::rotateAroundOriginZ(l2w, math::deg2Rad(45));
@@ -212,9 +215,9 @@ int main(__attribute__((unused))int argc, __attribute__((unused))char **argv)
     //              -1.902827, -3.543982, -11.895445, 0,
     //              5.459804, 10.568624, -4.02205, 0,
     //              0, 1, 0, 1);
-    core.addLight(std::shared_ptr<physics::Light>(new physics::PointLight(l2w, Vec3f(0.1, 0.1, 0.9), 100)));
+    //core.addLight(std::shared_ptr<physics::Light>(new physics::DistantLight(l2w, 1, 5)));
     //randomScene(core);
-    multipleSphereScene(core);
+    //multipleSphereScene(core);
     // teapotScene(core);
 
     std::thread render ([&core] () {core.render();});

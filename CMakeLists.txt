@@ -11,7 +11,8 @@ set(SRCS
     src/Primitives/MeshTriangle/MeshTriangle.cpp
     src/Primitives/Sphere/Sphere.cpp
     src/Primitives/Plane/Plane.cpp
-    src/Parser/ObjParser.cpp
+    src/Parser/Object/ObjParser.cpp
+    src/Parser/Config/CfgParser.cpp
     shared/math/analysis/analysis.cpp
     shared/math/Vectors/VecUtils.cpp
     shared/math/utils.cpp
@@ -31,7 +32,12 @@ endif()
 
 include_directories(include)
 
+find_package(libconfig++ REQUIRED)
+link_directories(${LIBCONFIG++_LIBRARY_DIR})
+
+include_directories(shared include ${LIBCONFIG++_INCLUDE_DIR})
 
 add_executable(raytracer ${SRCS} ${HEADERS})
-
+target_link_libraries(raytracer ${LIBCONFIG++_LIBRARY})
+target_link_libraries(raytracer config++)
 target_link_libraries(raytracer sfml-window sfml-graphics sfml-system)

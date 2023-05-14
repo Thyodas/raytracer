@@ -21,7 +21,7 @@
 namespace Parser {
 
     namespace ObjParserData {
-        struct transformationsOptions;
+        struct TransformationsOptions;
     }
 
     class AException : public std::exception {
@@ -148,7 +148,7 @@ namespace Parser {
         _commands[name] = function;
     }
 
-    int parseObj(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt,
+    int parseObj(raytracer::Core &core, Parser::ObjParserData::TransformationsOptions &opt,
                  const std::string& filePath, bool debug = false);
 
 } // Parser

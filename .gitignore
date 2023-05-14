@@ -13,3 +13,5 @@ build
 .vscode
 vgcore*
 build.sh
+*.pdf
+cmake-build-debug/

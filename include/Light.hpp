@@ -43,7 +43,6 @@ namespace physics {
                 lightIntensity = color * intensity;
                 distance = std::numeric_limits<float>::max();
             }
-        private:
             Vec3f dir;
     };
 

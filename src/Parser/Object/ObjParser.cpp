@@ -6,10 +6,10 @@
 */
 
 #include "ObjParser.hpp"
-#include "../Primitives/MeshTriangle/MeshTriangle.hpp"
-#include "../../shared/math/Matrix/Matrix44.hpp"
-#include "../../shared/math/Matrix/MatrixUtils.hpp"
-#include "../../shared/math/utils.hpp"
+#include "../../Primitives/MeshTriangle/MeshTriangle.hpp"
+#include "../../../shared/math/Matrix/Matrix44.hpp"
+#include "../../../shared/math/Matrix/MatrixUtils.hpp"
+#include "../../../shared/math/utils.hpp"
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -43,7 +43,7 @@ namespace Parser {
     }
 
     Matrix44f computeTransformationMatrixes(std::vector<Vec3f> &vertexArray,
-                                         Parser::ObjParserData::transformationsOptions &opt)
+                                         Parser::ObjParserData::TransformationsOptions &opt)
     {
         Matrix44f result;
         Vec3f center;
@@ -68,7 +68,7 @@ namespace Parser {
         return result;
     }
 
-    int parseObj(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt,
+    int parseObj(raytracer::Core &core, Parser::ObjParserData::TransformationsOptions &opt,
                  const std::string& filePath, bool debug)
     {
         std::unique_ptr<Parser::ObjParser> parser(new Parser::ObjParser());
@@ -170,7 +170,7 @@ namespace Parser {
         return;
     }
 
-    void ObjParser::fillCore(raytracer::Core &core, Parser::ObjParserData::transformationsOptions &opt)
+    void ObjParser::fillCore(raytracer::Core &core, Parser::ObjParserData::TransformationsOptions &opt)
     {
         for (size_t i = 0; i < _accumulator.objects.size(); ++i) {
             Matrix44f objectToWorld = computeTransformationMatrixes(_accumulator.objects[i].vertexArray, opt);
@@ -204,6 +204,29 @@ namespace Parser {
         addCommand("s", &command_s);
         addCommand("g", &command_g);
         addCommand("usemtl", &command_usemtl);
+    }
+
+    ObjParserData::MeshTriangles ObjParser::getMeshTriangles(ObjParserData::TransformationsOptions &opt)
+    {
+        ObjParserData::MeshTriangles result;
+        for (auto &item: _accumulator.objects) {
+            Matrix44f objectToWorld = computeTransformationMatrixes(item.vertexArray, opt);
+            auto mesh = std::make_shared<primitive::MeshTriangle>(
+                objectToWorld,
+                item.faceIndex,
+                item.vertexIndex,
+                item.vertexArray,
+                item.normals,
+                item.st);
+            mesh->kd = opt.kd;
+            mesh->ks = opt.ks;
+            mesh->ka = opt.ka;
+            mesh->albedo = opt.color;
+            mesh->refractionCoefficient = 0.8;
+            mesh->specularExponent = 5;
+            result.push_back(mesh);
+        }
+        return result;
     }
 }
 
